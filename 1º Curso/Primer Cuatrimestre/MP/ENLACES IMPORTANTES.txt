@@ -1,0 +1,7 @@
+https://www.codeblocks.org/
+
+https://sourceforge.net/projects/codeblocks/files/Binaries/17.12/Windows/codeblocks-17.12mingw-setup.exe/download
+
+https://sourceforge.net/projects/codeblocks/files/Binaries/20.03/Windows/codeblocks-20.03mingw-setup.exe/download
+
+https://cplusplus.com/

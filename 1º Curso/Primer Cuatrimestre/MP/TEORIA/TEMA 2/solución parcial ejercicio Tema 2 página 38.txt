@@ -1,0 +1,174 @@
+#include <iostream>
+#include <cstring>
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
+
+using namespace std;
+class SerVivo {
+ int edad; //la edad debe ser entre 1 y 4
+public:
+ SerVivo(int e) { edad=e; }
+ virtual ~SerVivo() { cout << "Destruyendo Servivo \n"; }
+ virtual void ver() const { cout << edad; }
+ int getEdad() const { return edad; }
+ void setEdad(int e) { edad=e; }
+};
+
+class Animal: public SerVivo {
+ float peso; //los animales tienen un peso entre 10 y 20
+public:
+ Animal(int e, float p):SerVivo(e) { peso=p; }
+ ~Animal() { cout << "Destruyendo Animal \n"; }
+ float getPeso() const { return peso; }
+ void setPeso(float p) { peso=p; }
+ void ver() const { SerVivo::ver(); cout << ", " << peso; }
+ void correr() const { cout << "correr... " << endl; }
+};
+
+class Ave: public SerVivo {
+ char *color; //las aves son de color rojo, blanco, negro, azul o rosa
+public:
+ Ave (int e, char* c):SerVivo(e) { color=new char[strlen(c)+1]; strcpy(color, c); }
+ ~Ave () { delete [] color; cout << "Destruyendo Ave \n"; }
+ const char* getColor() const { return color; }
+ void setColor(char *c) { delete [] color; color=new char[strlen(c)+1]; strcpy(color, c); }
+ void ver() const { SerVivo::ver(); cout << ", " << color; }
+ void volar() const { cout << "volar... ave color " << color << " " << endl; }
+};
+
+class Pez: public SerVivo {
+public:
+ Pez (int e):SerVivo(e) { }
+ ~Pez() { cout << "Destruyendo Pez \n"; }
+ void nadar() const { cout << "nadar... " << endl; }
+};
+
+class Zoo {
+ SerVivo *censo[20];
+ int n;
+public:
+ Zoo(); //genera un numero aleatorio (entre 10 y 15) de animales, peces y aves (minimo 3 de cada tipo)
+ ~Zoo();
+ void ver() const; //muestra por pantalla que tipo es (Animal, Ave, Pez) y sus caracteristicas
+ void echarAVolar(); //hace volar a las aves (la primera y ultima se escapan del zoo y hay que eliminarlas)
+ void engordar(); //a los Animales con un peso menor de la media los engorda 2 kilos
+ void mostrarColor(char *color) const; //muestra los colores diferentes de aves que hay (sin repetirlos)
+ static bool mayorAcuario(Zoo z1, Zoo z2); //true si z1 tiene mas peces que z2
+ friend void echarACorrer(Zoo z, int edad); //pone a correr al animal de mayor edad (pueden ser varios)
+};
+void echarACorrer(Zoo z, int edad); //pone a correr al animal de mayor edad (pueden ser varios)
+
+
+Zoo::Zoo() {
+  int tipo, edad, peso, color;
+  srand (time(NULL));
+  n = rand() % 6 + 10;
+  char *colores[]= {"blanco", "negro", "rojo", "azul"};
+  for(int i=0; i<n; i++) {
+    tipo = rand() % 3;
+    edad = rand() % 21;
+    if (tipo==0) {  //edad [0-20] peso [5-20]
+      peso = rand() % 16 + 5;
+      censo[i]=new Animal(edad, peso);
+    }
+    else if (tipo==1) {  //edad [0-20] color ["blanco", "negro", "rojo", "azul"]
+      color = rand() % 4;
+      censo[i]=new Ave(edad, colores[color]);
+    }
+    else {  //edad [0-20]
+      censo[i]=new Pez(edad);
+    }
+  }
+}
+
+
+Zoo::~Zoo() {
+  for(int i=0; i<n; i++) {
+    delete censo[i];
+  }
+}
+
+
+void Zoo::ver() const {
+  for(int i=0; i<n; i++) {
+    if (typeid(*censo[i])==typeid(Animal))
+      cout << "Animal: ";
+    else if (typeid(*censo[i])==typeid(Ave))
+      cout << "Ave: ";
+    else
+      cout << "Pez: ";
+    censo[i]->ver();
+    cout << endl;
+  }
+}
+
+
+void Zoo::echarAVolar() {
+  int i, pos;
+  for(i=0; i<n; i++) {
+    if (typeid(*censo[i])==typeid(Ave))
+      ((Ave *)censo[i])->volar();
+  }
+  //elimino la primera ave
+  pos=-1;
+  for(i=0; i<n; i++) {
+    if (typeid(*censo[i])==typeid(Ave)) {
+      pos=i;
+      break;
+    }
+  }
+  if (pos!=-1) {
+    delete censo[pos];
+    for(i=pos+1; i<n; i++)
+      censo[i-1]=censo[i];
+    n--;
+  }
+
+  //elimino la ultima ave
+  pos=-1;
+  for(i=n-1; i>=0; i--) {
+    if (typeid(*censo[i])==typeid(Ave)) {
+      pos=i;
+      break;
+    }
+  }
+  if (pos!=-1) {
+    delete censo[pos];
+    for(i=pos+1; i<n; i++)
+      censo[i-1]=censo[i];
+    n--;
+  }
+}
+
+void Zoo::engordar() {
+  double sumapeso, pesomedio;
+  int npeso;
+  Animal *a;
+  sumapeso=0;
+  npeso=0;
+  for(int i=0; i<n; i++) {
+    a=dynamic_cast<Animal *>(censo[i]);
+    if (a) { //if (a!=NULL)
+      sumapeso=sumapeso+a->getPeso();
+      npeso++;
+    }
+  }
+  pesomedio=sumapeso/npeso;
+  for(int i=0; i<n; i++) {
+    a=dynamic_cast<Animal *>(censo[i]);
+    if (a) { //if (a!=NULL)
+      if (a->getPeso()<pesomedio)
+        a->setPeso(a->getPeso()+2);
+    }
+  }
+}
+
+int main() {
+  Zoo huelva;
+  huelva.ver();
+  huelva.echarAVolar();
+  huelva.ver();
+  huelva.engordar();
+  huelva.ver();
+  return 0;
+}
