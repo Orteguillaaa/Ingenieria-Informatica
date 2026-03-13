@@ -1,0 +1,436 @@
+
+> load("C:/Users/juanc/Desktop/R Practicas/Practica 1/Datos_personas.RData")
+
+> Datos_personas$IMC <- with(Datos_personas, Peso/Altura^2)
+
+> load("C:/Users/juanc/Desktop/R Practicas/RCars.RData")
+
+> Consumos_Europa <- subset(RCars, subset=origen=="Europa", select=c(consumo))
+
+> names(Consumos_Europa)
+[1] "consumo"
+
+> summary(Consumos_Europa)
+    consumo      
+ Min.   : 5.000  
+ 1st Qu.: 8.000  
+ Median : 9.000  
+ Mean   : 8.886  
+ 3rd Qu.:10.000  
+ Max.   :15.000  
+ NA's   :3       
+
+> Consumos_Japon <- subset(RCars, subset=origen=="Japon", select=c(consumo))
+
+> summary(Consumos_Japon)
+    consumo      
+ Min.   : 5.000  
+ 1st Qu.: 7.000  
+ Median : 7.000  
+ Mean   : 8.051  
+ 3rd Qu.: 9.000  
+ Max.   :13.000  
+
+> cil_no_8 <- subset(RCars, subset=cilindr!=8, select=c(cv))
+
+> summary(cil_no_8)
+       cv        
+ Min.   : 46.00  
+ 1st Qu.: 71.00  
+ Median : 86.00  
+ Mean   : 85.34  
+ 3rd Qu.: 97.00  
+ Max.   :165.00  
+ NA's   :6       
+
+> summary(cil_no_8)
+       cv        
+ Min.   : 46.00  
+ 1st Qu.: 71.00  
+ Median : 86.00  
+ Mean   : 85.34  
+ 3rd Qu.: 97.00  
+ Max.   :165.00  
+ NA's   :6       
+
+> summary(RCars)
+    consumo          motor            cv              peso             acel            año           origen       cilindr     
+ Min.   : 5.00   Min.   :  66   Min.   : 46.00   Min.   : 244.0   Min.   : 8.00   Min.   :70.00   EE.UU.:253   Min.   :3.000  
+ 1st Qu.: 8.00   1st Qu.:1708   1st Qu.: 75.75   1st Qu.: 741.2   1st Qu.:13.62   1st Qu.:73.00   Europa: 73   1st Qu.:4.000  
+ Median :10.00   Median :2434   Median : 95.00   Median : 936.5   Median :15.50   Median :76.00   Japon : 79   Median :4.000  
+ Mean   :11.23   Mean   :3180   Mean   :104.83   Mean   : 989.5   Mean   :15.50   Mean   :75.94   NA's  :  1   Mean   :5.469  
+ 3rd Qu.:13.00   3rd Qu.:4806   3rd Qu.:129.25   3rd Qu.:1203.8   3rd Qu.:17.07   3rd Qu.:79.00                3rd Qu.:8.000  
+ Max.   :26.00   Max.   :7456   Max.   :230.00   Max.   :1713.0   Max.   :24.80   Max.   :82.00                Max.   :8.000  
+ NA's   :8                      NA's   :6                                         NA's   :1                    NA's   :1      
+
+> RCars <- within(RCars, {
++   cilindr_fac <- as.factor(cilindr)
++ })
+
+> summary(RCars)
+    consumo          motor            cv              peso             acel            año           origen       cilindr      cilindr_fac
+ Min.   : 5.00   Min.   :  66   Min.   : 46.00   Min.   : 244.0   Min.   : 8.00   Min.   :70.00   EE.UU.:253   Min.   :3.000   3   :  4   
+ 1st Qu.: 8.00   1st Qu.:1708   1st Qu.: 75.75   1st Qu.: 741.2   1st Qu.:13.62   1st Qu.:73.00   Europa: 73   1st Qu.:4.000   4   :207   
+ Median :10.00   Median :2434   Median : 95.00   Median : 936.5   Median :15.50   Median :76.00   Japon : 79   Median :4.000   5   :  3   
+ Mean   :11.23   Mean   :3180   Mean   :104.83   Mean   : 989.5   Mean   :15.50   Mean   :75.94   NA's  :  1   Mean   :5.469   6   : 84   
+ 3rd Qu.:13.00   3rd Qu.:4806   3rd Qu.:129.25   3rd Qu.:1203.8   3rd Qu.:17.07   3rd Qu.:79.00                3rd Qu.:8.000   8   :107   
+ Max.   :26.00   Max.   :7456   Max.   :230.00   Max.   :1713.0   Max.   :24.80   Max.   :82.00                Max.   :8.000   NA's:  1   
+ NA's   :8                      NA's   :6                                         NA's   :1                    NA's   :1                  
+
+> library(abind, pos=25)
+
+> library(e1071, pos=26)
+
+> numSummary(RCars[,"cilindr", drop=FALSE], statistics=c("mean", "sd", "IQR", "quantiles"), quantiles=c(0,.25,.5,.75,1))
+     mean       sd IQR 0% 25% 50% 75% 100%   n NA
+ 5.469136 1.709658   4  3   4   4   8    8 405  1
+
+> summary(RCars)
+    consumo          motor            cv              peso             acel            año           origen       cilindr      cilindr_fac
+ Min.   : 5.00   Min.   :  66   Min.   : 46.00   Min.   : 244.0   Min.   : 8.00   Min.   :70.00   EE.UU.:253   Min.   :3.000   3   :  4   
+ 1st Qu.: 8.00   1st Qu.:1708   1st Qu.: 75.75   1st Qu.: 741.2   1st Qu.:13.62   1st Qu.:73.00   Europa: 73   1st Qu.:4.000   4   :207   
+ Median :10.00   Median :2434   Median : 95.00   Median : 936.5   Median :15.50   Median :76.00   Japon : 79   Median :4.000   5   :  3   
+ Mean   :11.23   Mean   :3180   Mean   :104.83   Mean   : 989.5   Mean   :15.50   Mean   :75.94   NA's  :  1   Mean   :5.469   6   : 84   
+ 3rd Qu.:13.00   3rd Qu.:4806   3rd Qu.:129.25   3rd Qu.:1203.8   3rd Qu.:17.07   3rd Qu.:79.00                3rd Qu.:8.000   8   :107   
+ Max.   :26.00   Max.   :7456   Max.   :230.00   Max.   :1713.0   Max.   :24.80   Max.   :82.00                Max.   :8.000   NA's:  1   
+ NA's   :8                      NA's   :6                                         NA's   :1                    NA's   :1                  
+
+> names(RCars)
+[1] "consumo"     "motor"       "cv"          "peso"        "acel"        "año"         "origen"      "cilindr"     "cilindr_fac"
+
+> editDataset(RCars)
+
+> numSummary(RCars[,c("cv", "peso"), drop=FALSE], groups=RCars$origen, statistics=c("mean", "quantiles"), quantiles=c(0,.25,0.3,.5,.75,1))
+
+Variable: cv 
+            mean 0%  25% 30% 50%   75% 100%   n NA
+EE.UU. 119.60643 52 88.0  90 105 150.0  230 249  4
+Europa  81.00000 46 69.5  71  77  90.5  133  71  2
+Japon   79.83544 52 67.0  67  75  95.0  132  79  0
+
+Variable: peso 
+            mean  0% 25%   30%  50%    75% 100%   n NA
+EE.UU. 1122.1146 600 906 953.4 1126 1351.0 1713 253  0
+Europa  810.1233 608 688 705.0  748  933.0 1273  73  0
+Japon   740.0506 537 661 669.4  718  803.5  976  79  0
+
+> numSummary(RCars[,c("cv", "peso"), drop=FALSE], groups=RCars$cilindr_fac, statistics=c("mean", "quantiles"), quantiles=c(0,.25,0.3,.5,.75,1))
+
+Variable: cv 
+       mean 0%    25%   30%   50%    75% 100%   n NA
+3  99.25000 90  95.25  96.3  98.5 102.50  110   4  0
+4  78.47030 46  68.00  70.0  78.0  88.75  115 202  5
+5  82.33333 67  72.00  73.0  77.0  90.00  103   3  0
+6 101.50602 72  92.50  95.0 100.0 110.00  165  83  1
+8 158.13084 90 140.00 145.0 150.0 175.00  230 107  0
+
+Variable: peso 
+       mean   0%     25%    30%  50%     75% 100%   n NA
+3  799.0000  708  759.00  769.2  791  831.00  906   4  0
+4  770.5507  537  681.50  701.6  744  857.50 1090 207  0
+5 1034.0000  943  963.00  967.0  983 1079.50 1176   3  0
+6 1065.7500  824  979.75  993.4 1067 1143.25 1302  84  0
+8 1366.1028 1028 1266.00 1288.6 1378 1460.00 1713 107  0
+
+> numSummary(RCars[,"acel", drop=FALSE], groups=RCars$cilindr_fac, statistics=c("sd", "var", "quantiles"), quantiles=c(0,.25,0.3,.5,.75,1))
+        sd      var   0%    25%  30%  50%  75% 100% acel:n
+3 0.500000 0.250000 12.5 13.250 13.4 13.5 13.5 13.5      4
+4 2.378876 5.659049 11.6 14.850 15.0 16.2 18.0 24.8    207
+5 2.369247 5.613333 15.9 17.900 18.3 19.9 20.0 20.1      3
+6 2.021140 4.085007 11.3 15.075 15.5 16.1 17.6 21.0     84
+8 2.196316 4.823802  8.0 11.500 11.5 13.0 14.0 22.2    107
+
+> numSummary(RCars[,"acel", drop=FALSE], groups=RCars$cilindr_fac, statistics=c("sd", "quantiles"), quantiles=c(0,.25,0.3,.5,.75,1))
+        sd   0%    25%  30%  50%  75% 100% acel:n
+3 0.500000 12.5 13.250 13.4 13.5 13.5 13.5      4
+4 2.378876 11.6 14.850 15.0 16.2 18.0 24.8    207
+5 2.369247 15.9 17.900 18.3 19.9 20.0 20.1      3
+6 2.021140 11.3 15.075 15.5 16.1 17.6 21.0     84
+8 2.196316  8.0 11.500 11.5 13.0 14.0 22.2    107
+
+> numSummary(RCars[,"acel", drop=FALSE], groups=RCars$cilindr_fac, statistics=c("mean", "sd", "quantiles"), quantiles=c(0,.25,0.3,.5,.75,1))
+      mean       sd   0%    25%  30%  50%  75% 100% acel:n
+3 13.25000 0.500000 12.5 13.250 13.4 13.5 13.5 13.5      4
+4 16.61643 2.378876 11.6 14.850 15.0 16.2 18.0 24.8    207
+5 18.63333 2.369247 15.9 17.900 18.3 19.9 20.0 20.1      3
+6 16.26310 2.021140 11.3 15.075 15.5 16.1 17.6 21.0     84
+8 12.78411 2.196316  8.0 11.500 11.5 13.0 14.0 22.2    107
+
+> numSummary(RCars[,"acel", drop=FALSE], groups=RCars$cilindr_fac, statistics=c("sd", "quantiles"), quantiles=c(0,.25,0.3,.5,.75,1))
+        sd   0%    25%  30%  50%  75% 100% acel:n
+3 0.500000 12.5 13.250 13.4 13.5 13.5 13.5      4
+4 2.378876 11.6 14.850 15.0 16.2 18.0 24.8    207
+5 2.369247 15.9 17.900 18.3 19.9 20.0 20.1      3
+6 2.021140 11.3 15.075 15.5 16.1 17.6 21.0     84
+8 2.196316  8.0 11.500 11.5 13.0 14.0 22.2    107
+
+> var(RCarsãcel,na.rm=TRUE
+
+> var(RCarsãcel,na.rm=TRUE)
+
+> var(RCars$acel,na.rm=TRUE)
+[1] 7.957951
+
+> numSummary(RCars[,"peso", drop=FALSE], groups=RCars$origen, statistics=c("quantiles", "skewness", "kurtosis"), quantiles=c(0,.25,0.3,.5,.75,1), type="1")
+         skewness   kurtosis  0% 25%   30%  50%    75% 100% peso:n
+EE.UU. 0.05525765 -0.9577358 600 906 953.4 1126 1351.0 1713    253
+Europa 0.75713056 -0.3857040 608 688 705.0  748  933.0 1273     73
+Japon  0.48769387 -0.4305033 537 661 669.4  718  803.5  976     79
+
+> Tapply(consumo ~ cilindr_fac + origen, mean, na.action=na.omit, data=RCars) # mean by groups
+           origen
+cilindr_fac    EE.UU.    Europa     Japon
+          3        NA        NA 11.500000
+          4  8.680556  8.634921  7.666667
+          5        NA  9.000000        NA
+          6 12.243243 12.750000 10.166667
+          8 16.215686        NA        NA
+
+> Tapply(consumo ~ cilindr_fac + origen, sd, na.action=na.omit, data=RCars) # sd by groups
+           origen
+cilindr_fac   EE.UU.   Europa    Japon
+          3       NA       NA 1.290994
+          4 1.351331 1.834276 1.491808
+          5       NA 3.000000       NA
+          6 1.788937 3.201562 1.940790
+          8 2.738170       NA       NA
+
+> Tapply(consumo ~ cilindr_fac + origen, median, na.action=na.omit, data=RCars) # median by groups
+           origen
+cilindr_fac EE.UU. Europa Japon
+          3     NA     NA  11.5
+          4    9.0      9   7.0
+          5     NA      9    NA
+          6   12.0     14  10.5
+          8   16.5     NA    NA
+
+> local({
++   .Table <- with(RCars, table(origen))
++   cat("\ncounts:\n")
++   print(.Table)
++   cat("\npercentages:\n")
++   print(round(100*.Table/sum(.Table), 2))
++ })
+
+counts:
+origen
+EE.UU. Europa  Japon 
+   253     73     79 
+
+percentages:
+origen
+EE.UU. Europa  Japon 
+ 62.47  18.02  19.51 
+
+> local({
++   .Table <- xtabs(~cilindr_fac+origen, data=RCars)
++   cat("\nFrequency table:\n")
++   print(.Table)
++   .Test <- chisq.test(.Table, correct=FALSE)
++   print(.Test)
++ })
+
+Frequency table:
+           origen
+cilindr_fac EE.UU. Europa Japon
+          3      0      0     4
+          4     72     66    69
+          5      0      3     0
+          6     74      4     6
+          8    107      0     0
+
+	Pearson's Chi-squared test
+
+data:  .Table
+X-squared = 185.79, df = 8, p-value < 2.2e-16
+
+
+> local({
++   .Table <- xtabs(~cilindr_fac+origen, data=RCars)
++   cat("\nFrequency table:\n")
++   print(.Table)
++   cat("\nTotal percentages:\n")
++   print(totPercents(.Table))
++   .Test <- chisq.test(.Table, correct=FALSE)
++   print(.Test)
++ })
+
+Frequency table:
+           origen
+cilindr_fac EE.UU. Europa Japon
+          3      0      0     4
+          4     72     66    69
+          5      0      3     0
+          6     74      4     6
+          8    107      0     0
+
+Total percentages:
+      EE.UU. Europa Japon Total
+3        0.0    0.0   1.0   1.0
+4       17.8   16.3  17.0  51.1
+5        0.0    0.7   0.0   0.7
+6       18.3    1.0   1.5  20.7
+8       26.4    0.0   0.0  26.4
+Total   62.5   18.0  19.5 100.0
+
+	Pearson's Chi-squared test
+
+data:  .Table
+X-squared = 185.79, df = 8, p-value < 2.2e-16
+
+
+> local({
++   .Table <- xtabs(~cilindr_fac+origen, data=RCars)
++   cat("\nFrequency table:\n")
++   print(.Table)
++   cat("\nColumn percentages:\n")
++   print(colPercents(.Table))
++   .Test <- chisq.test(.Table, correct=FALSE)
++   print(.Test)
++ })
+
+Frequency table:
+           origen
+cilindr_fac EE.UU. Europa Japon
+          3      0      0     4
+          4     72     66    69
+          5      0      3     0
+          6     74      4     6
+          8    107      0     0
+
+Column percentages:
+           origen
+cilindr_fac EE.UU. Europa Japon
+      3        0.0    0.0   5.1
+      4       28.5   90.4  87.3
+      5        0.0    4.1   0.0
+      6       29.2    5.5   7.6
+      8       42.3    0.0   0.0
+      Total  100.0  100.0 100.0
+      Count  253.0   73.0  79.0
+
+	Pearson's Chi-squared test
+
+data:  .Table
+X-squared = 185.79, df = 8, p-value < 2.2e-16
+
+
+> local({
++   .Table <- xtabs(~cilindr_fac+origen, data=RCars)
++   cat("\nFrequency table:\n")
++   print(.Table)
++   cat("\nRow percentages:\n")
++   print(rowPercents(.Table))
++   .Test <- chisq.test(.Table, correct=FALSE)
++   print(.Test)
++ })
+
+Frequency table:
+           origen
+cilindr_fac EE.UU. Europa Japon
+          3      0      0     4
+          4     72     66    69
+          5      0      3     0
+          6     74      4     6
+          8    107      0     0
+
+Row percentages:
+           origen
+cilindr_fac EE.UU. Europa Japon Total Count
+          3    0.0    0.0 100.0   100     4
+          4   34.8   31.9  33.3   100   207
+          5    0.0  100.0   0.0   100     3
+          6   88.1    4.8   7.1   100    84
+          8  100.0    0.0   0.0   100   107
+
+	Pearson's Chi-squared test
+
+data:  .Table
+X-squared = 185.79, df = 8, p-value < 2.2e-16
+
+
+> library(colorspace, pos=27)
+
+> RCars <- within(RCars, {
++   peso_fact <- as.factor(peso)
++ })
+
+> with(RCars, piechart(peso_fact, xlab="", ylab="", main="peso_fact", col=rainbow_hcl(318), scale="percent"))
+
+> RCars <- within(RCars, {
++   peso_rec <- Recode(peso, '225:525="[225,525]"; 525:825="(525,825]"; 825:1125="(825,1125]"; 1125:1425="(1125,1425]"; 1425:1725="(1425,1725]"', as.factor=TRUE, to.value="=", interval=":", separator=";")
++ })
+
+> with(RCars, piechart(peso_rec, xlab="", ylab="", main="peso_rec", col=rainbow_hcl(5), scale="percent"))
+
+> with(RCars, piechart(peso_rec, xlab="", ylab="", main="peso_rec", col=rainbow_hcl(5), scale="percent"))
+
+> local({
++   .Table <- with(RCars, table(peso_rec))
++   cat("\ncounts:\n")
++   print(.Table)
++   cat("\npercentages:\n")
++   print(round(100*.Table/sum(.Table), 2))
++ })
+
+counts:
+peso_rec
+(1125,1425] (1425,1725]   (525,825]  (825,1125]   [225,525] 
+         91          39         145         130           1 
+
+percentages:
+peso_rec
+(1125,1425] (1425,1725]   (525,825]  (825,1125]   [225,525] 
+      22.41        9.61       35.71       32.02        0.25 
+
+> with(RCars, Barplot(origen, xlab="origen", ylab="Frequency", label.bars=TRUE))
+
+> with(RCars, Hist(peso, scale="frequency", breaks="Sturges", col="darkgray"))
+
+> with(RCars, Hist(peso, scale="percent", breaks="Sturges", col="darkgray"))
+
+> with(RCars, Hist(peso, groups=origen, scale="percent", breaks="Sturges", col="darkgray"))
+
+> RCars,Hist(peso,scale="frequency",breaks="Sturges",col="darkgray"))
+
+> with(RCars,Hist(peso,scale="frequency",breaks="Sturges",col="darkgray"))
+
+> with(RCars, Hist(motor, scale="frequency", breaks=c(0,2000,4000,6000,8000),col="darkgray"))
+
+> RCars <- within(RCars, {
++   año_fac <- as.factor(año)
++ })
+
+> with(RCars, plotMeans(cv, año_fac, origen, error.bars="none", connect=TRUE, legend.pos="farright"))
+
+> library(lattice, pos=28)
+
+> xyplot(consumo ~ peso, type="p", pch=16, auto.key=list(border=TRUE), par.settings=simpleTheme(pch=16), scales=list(x=list(relation='same'), y=list(relation='same')), data=RCars)
+
+> xyplot(consumo ~ peso, groups=cilindr_fac, type="p", pch=16, auto.key=list(border=TRUE), par.settings=simpleTheme(pch=16), scales=list(x=list(relation='same'), y=list(relation='same')), data=RCars)
+
+> xyplot(consumo ~ peso | origen, groups=cilindr_fac, type="p", pch=16, auto.key=list(border=TRUE), par.settings=simpleTheme(pch=16), scales=list(x=list(relation='same'), y=list(relation='same')), data=RCars)
+
+> Boxplot(consumo ~ origen, data=RCars, id=list(method="y"))
+[1] "219" "283" "285" "119"
+
+> library(lpSolve, pos=29)
+
+> direccion="max"
+
+> vec obj=c(2,1)
++ mat rest=matrix(c(1,1,1,-2),nrow=2,byrow=TRUE)2
++ signo rest=c("<=","<=")
++ vec rec=c(5,3)
++ solucion=lp(direccion,vec obj,mat rest,signo rest,vec rec)
+
+> direccion="max"
+
+> vec obj=c(2,1)
++ mat rest=matrix(c(1,1,1,-2),nrow=2,byrow=TRUE)2
++ signo rest=c("<=","<=")
++ vec rec=c(5,3)
++ solucion=lp(direccion,vec obj,mat rest,signo rest,vec rec)
++ solucion$objval
++ solucion$solution
+

@@ -1,0 +1,10 @@
+
+editDataset(Datos_personas)
+editDataset(Datos_personas)
+save("Datos_personas", file="C:/Users/juanc/Desktop/R Practicas/Practica 1/Datos_personas.RData")
+Datos1_completo <- merge(Personas1, Personas1_pelo, all=TRUE, by="row.names")
+rownames(Datos1_completo) <- Datos1_completo$Row.names
+Datos1_completo$Row.names <- NULL
+editDataset(Datos1_completo)
+Datos_personas1 <- mergeRows(Datos1_completo, Personas2, common.only=FALSE)
+

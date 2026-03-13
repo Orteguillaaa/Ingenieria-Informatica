@@ -1,0 +1,382 @@
+<!-- R Commander Markdown Template -->
+
+Reemplazar con el título principal
+=======================
+
+### juanc
+
+### `r as.character(Sys.Date())`
+
+```{r echo=FALSE}
+# incluya este fragmento de código literalmente para especificar las opciones
+knitr::opts_chunk$set(comment=NA, prompt=TRUE, out.width=750, fig.height=8, fig.width=8)
+library(Rcmdr)
+library(car)
+library(RcmdrMisc)
+```
+
+```{r}
+load("C:/Users/juanc/Desktop/R Practicas/Practica 1/Datos_personas.RData")
+```
+
+```{r}
+load("C:/Users/juanc/Desktop/R Practicas/RCars.RData")
+```
+
+
+```{r}
+Consumos_Europa <- subset(RCars, subset=origen=="Europa", select=c(consumo))
+```
+
+```{r}
+names(Consumos_Europa)
+```
+
+
+
+### Resumir el conjunto de datos: Consumos_Europa
+```{r}
+summary(Consumos_Europa)
+```
+
+```{r}
+Consumos_Japon <- subset(RCars, subset=origen=="Japon", select=c(consumo))
+```
+
+
+### Resumir el conjunto de datos: Consumos_Japon
+```{r}
+summary(Consumos_Japon)
+```
+
+```{r}
+cil_no_8 <- subset(RCars, subset=cilindr!=8, select=c(cv))
+```
+
+
+### Resumir el conjunto de datos: cil_no_8
+```{r}
+summary(cil_no_8)
+```
+
+
+
+### Resumir el conjunto de datos: cil_no_8
+```{r}
+summary(cil_no_8)
+```
+
+
+### Resumir el conjunto de datos: RCars
+```{r}
+summary(RCars)
+```
+
+
+```{r}
+RCars <- within(RCars, {
+  cilindr_fac <- as.factor(cilindr)
+})
+```
+
+
+### Resumir el conjunto de datos: RCars
+```{r}
+summary(RCars)
+```
+
+
+```{r}
+library(abind, pos=25)
+```
+
+
+```{r}
+library(e1071, pos=26)
+```
+
+
+
+### Resúmenes numéricos: RCars
+```{r}
+numSummary(RCars[,"cilindr", drop=FALSE], statistics=c("mean", "sd", "IQR", "quantiles"), quantiles=c(0,.25,.5,.75,1))
+```
+
+
+### Resumir el conjunto de datos: RCars
+```{r}
+summary(RCars)
+```
+
+
+```{r}
+names(RCars)
+```
+
+
+
+### Resúmenes numéricos: RCars
+```{r}
+numSummary(RCars[,c("cv", "peso"), drop=FALSE], groups=RCars$origen, statistics=c("mean", "quantiles"), quantiles=c(0,.25,0.3,.5,.75,1))
+```
+
+
+### Resúmenes numéricos: RCars
+```{r}
+numSummary(RCars[,c("cv", "peso"), drop=FALSE], groups=RCars$cilindr_fac, statistics=c("mean", "quantiles"), quantiles=c(0,.25,0.3,.5,.75,1))
+```
+
+
+### Resúmenes numéricos: RCars
+```{r}
+numSummary(RCars[,"acel", drop=FALSE], groups=RCars$cilindr_fac, statistics=c("sd", "var", "quantiles"), quantiles=c(0,.25,0.3,.5,.75,1))
+```
+
+
+### Resúmenes numéricos: RCars
+```{r}
+numSummary(RCars[,"acel", drop=FALSE], groups=RCars$cilindr_fac, statistics=c("sd", "quantiles"), quantiles=c(0,.25,0.3,.5,.75,1))
+```
+
+
+### Resúmenes numéricos: RCars
+```{r}
+numSummary(RCars[,"acel", drop=FALSE], groups=RCars$cilindr_fac, statistics=c("mean", "sd", "quantiles"), quantiles=c(0,.25,0.3,.5,.75,1))
+```
+
+
+### Resúmenes numéricos: RCars
+```{r}
+numSummary(RCars[,"acel", drop=FALSE], groups=RCars$cilindr_fac, statistics=c("sd", "quantiles"), quantiles=c(0,.25,0.3,.5,.75,1))
+```
+
+```{r}
+var(RCars$acel,na.rm=TRUE)
+```
+
+
+
+### Resúmenes numéricos: RCars
+```{r}
+numSummary(RCars[,"peso", drop=FALSE], groups=RCars$origen, statistics=c("quantiles", "skewness", "kurtosis"), quantiles=c(0,.25,0.3,.5,.75,1), type="1")
+```
+
+
+### Tabla de estadísticas: consumo
+```{r}
+Tapply(consumo ~ cilindr_fac + origen, mean, na.action=na.omit, data=RCars) # mean by groups
+```
+
+
+### Tabla de estadísticas: consumo
+```{r}
+Tapply(consumo ~ cilindr_fac + origen, sd, na.action=na.omit, data=RCars) # sd by groups
+```
+
+
+### Tabla de estadísticas: consumo
+```{r}
+Tapply(consumo ~ cilindr_fac + origen, median, na.action=na.omit, data=RCars) # median by groups
+```
+
+
+### Frecuencias: origen
+```{r}
+local({
+  .Table <- with(RCars, table(origen))
+  cat("\ncounts:\n")
+  print(.Table)
+  cat("\npercentages:\n")
+  print(round(100*.Table/sum(.Table), 2))
+})
+```
+
+
+### Tablas de contingencia de dos vías: cilindr_fac, origen
+```{r}
+local({
+  .Table <- xtabs(~cilindr_fac+origen, data=RCars)
+  cat("\nFrequency table:\n")
+  print(.Table)
+  .Test <- chisq.test(.Table, correct=FALSE)
+  print(.Test)
+})
+```
+
+
+### Tablas de contingencia de dos vías: cilindr_fac, origen
+```{r}
+local({
+  .Table <- xtabs(~cilindr_fac+origen, data=RCars)
+  cat("\nFrequency table:\n")
+  print(.Table)
+  cat("\nTotal percentages:\n")
+  print(totPercents(.Table))
+  .Test <- chisq.test(.Table, correct=FALSE)
+  print(.Test)
+})
+```
+
+
+### Tablas de contingencia de dos vías: cilindr_fac, origen
+```{r}
+local({
+  .Table <- xtabs(~cilindr_fac+origen, data=RCars)
+  cat("\nFrequency table:\n")
+  print(.Table)
+  cat("\nColumn percentages:\n")
+  print(colPercents(.Table))
+  .Test <- chisq.test(.Table, correct=FALSE)
+  print(.Test)
+})
+```
+
+
+### Tablas de contingencia de dos vías: cilindr_fac, origen
+```{r}
+local({
+  .Table <- xtabs(~cilindr_fac+origen, data=RCars)
+  cat("\nFrequency table:\n")
+  print(.Table)
+  cat("\nRow percentages:\n")
+  print(rowPercents(.Table))
+  .Test <- chisq.test(.Table, correct=FALSE)
+  print(.Test)
+})
+```
+
+```{r}
+library(colorspace, pos=27)
+```
+
+
+```{r}
+RCars <- within(RCars, {
+  peso_fact <- as.factor(peso)
+})
+```
+
+
+### Gráfica de sectores: peso_fact
+```{r}
+with(RCars, piechart(peso_fact, xlab="", ylab="", main="peso_fact", col=rainbow_hcl(318), scale="percent"))
+```
+
+```{r}
+RCars <- within(RCars, {
+  peso_rec <- Recode(peso, '225:525="[225,525]"; 525:825="(525,825]"; 825:1125="(825,1125]"; 1125:1425="(1125,1425]"; 1425:1725="(1425,1725]"', as.factor=TRUE, to.value="=", interval=":", separator=";")
+})
+```
+
+
+### Gráfica de sectores: peso_rec
+```{r}
+with(RCars, piechart(peso_rec, xlab="", ylab="", main="peso_rec", col=rainbow_hcl(5), scale="percent"))
+```
+
+
+### Gráfica de sectores: peso_rec
+```{r}
+with(RCars, piechart(peso_rec, xlab="", ylab="", main="peso_rec", col=rainbow_hcl(5), scale="percent"))
+```
+
+
+### Frecuencias: peso_rec
+```{r}
+local({
+  .Table <- with(RCars, table(peso_rec))
+  cat("\ncounts:\n")
+  print(.Table)
+  cat("\npercentages:\n")
+  print(round(100*.Table/sum(.Table), 2))
+})
+```
+
+
+### Diagrama de barras: origen
+```{r}
+with(RCars, Barplot(origen, xlab="origen", ylab="Frequency", label.bars=TRUE))
+```
+
+
+### Histograma: peso
+```{r}
+with(RCars, Hist(peso, scale="frequency", breaks="Sturges", col="darkgray"))
+```
+
+
+### Histograma: peso
+```{r}
+with(RCars, Hist(peso, scale="percent", breaks="Sturges", col="darkgray"))
+```
+
+
+### Histograma: peso
+```{r}
+with(RCars, Hist(peso, groups=origen, scale="percent", breaks="Sturges", col="darkgray"))
+```
+
+
+```{r}
+with(RCars,Hist(peso,scale="frequency",breaks="Sturges",col="darkgray"))
+```
+
+
+```{r}
+with(RCars, Hist(motor, scale="frequency", breaks=c(0,2000,4000,6000,8000),col="darkgray"))
+```
+
+
+```{r}
+RCars <- within(RCars, {
+  año_fac <- as.factor(año)
+})
+```
+
+
+### Gráfica de las medias: cv by año_fac, origen
+```{r}
+with(RCars, plotMeans(cv, año_fac, origen, error.bars="none", connect=TRUE, legend.pos="farright"))
+```
+
+```{r}
+library(lattice, pos=28)
+```
+
+
+
+### Gráfica condicionada: consumo ~ peso
+```{r}
+xyplot(consumo ~ peso, type="p", pch=16, auto.key=list(border=TRUE), par.settings=simpleTheme(pch=16), scales=list(x=list(relation='same'), y=list(relation='same')), data=RCars)
+```
+
+
+### Gráfica condicionada: consumo ~ peso
+```{r}
+xyplot(consumo ~ peso, groups=cilindr_fac, type="p", pch=16, auto.key=list(border=TRUE), par.settings=simpleTheme(pch=16), scales=list(x=list(relation='same'), y=list(relation='same')), data=RCars)
+```
+
+
+### Gráfica condicionada: consumo ~ peso | origen
+```{r}
+xyplot(consumo ~ peso | origen, groups=cilindr_fac, type="p", pch=16, auto.key=list(border=TRUE), par.settings=simpleTheme(pch=16), scales=list(x=list(relation='same'), y=list(relation='same')), data=RCars)
+```
+
+
+### Diagrama de caja: consumo ~ origen
+```{r}
+Boxplot(consumo ~ origen, data=RCars, id=list(method="y"))
+```
+
+```{r}
+library(lpSolve, pos=29)
+```
+
+```{r}
+direccion="max"
+```
+
+```{r}
+direccion="max"
+```
+
