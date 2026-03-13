@@ -1,0 +1,118 @@
+# depslib dependency file v1.0
+1584205420 source:c:\users\usuario\desktop\practica1ed1\main.cpp
+	<iostream>
+
+1741863631 source:c:\users\usuario\desktop\practica1ed1\golfistas.cpp
+
+1741863882 source:c:\users\usuario\desktop\practica1ed1\torneo.cpp
+
+1741863632 source:h:\practica1ed1\golfistas.cpp
+
+1744280062 source:h:\practica1ed1\main.cpp
+	<iostream>
+	"Torneo.h"
+	"Comun.h"
+	<fstream>
+
+1742469730 h:\practica1ed1\torneo.h
+	"Comun.h"
+	"Golfistas.h"
+	<fstream>
+
+1744281072 h:\practica1ed1\comun.h
+
+1741863818 h:\practica1ed1\golfistas.h
+
+1744281568 source:h:\practica1ed1\torneo.cpp
+	<iostream>
+	"Torneo.h"
+	<cstring>
+
+1744281012 source:h:\practica1ed1\clasificacion.cpp
+	"Clasificacion.h"
+	<iostream>
+	<cstring>
+
+1744280686 h:\practica1ed1\clasificacion.h
+
+1745081916 source:d:\practica1ed1\clasificacion.cpp
+	"Clasificacion.h"
+	"Comun.h"
+	<iostream>
+	<cstring>
+
+1744280686 d:\practica1ed1\clasificacion.h
+
+1745263798 d:\practica1ed1\comun.h
+
+1741863632 source:d:\practica1ed1\golfistas.cpp
+
+1745437992 source:d:\practica1ed1\main.cpp
+	<iostream>
+	"Torneo.h"
+	"Comun.h"
+	<fstream>
+	<cstring>
+	"Clasificacion.h"
+
+1745339810 d:\practica1ed1\torneo.h
+	"Comun.h"
+	"Golfistas.h"
+	<fstream>
+
+1741863818 d:\practica1ed1\golfistas.h
+
+1745345056 source:d:\practica1ed1\torneo.cpp
+	<iostream>
+	"Torneo.h"
+	<cstring>
+	"Comun.h"
+	<fstream>
+
+1745484975 source:c:\users\juanc\desktop\practica1ed1\clasificacion.cpp
+	"Clasificacion.h"
+	"Comun.h"
+	<iostream>
+	<cstring>
+
+1744280686 c:\users\juanc\desktop\practica1ed1\clasificacion.h
+
+1745263798 c:\users\juanc\desktop\practica1ed1\comun.h
+
+1745485179 source:c:\users\juanc\desktop\practica1ed1\golfistas.cpp
+	"Golfistas.h"
+	<iostream>
+	<cstring>
+
+1745485859 source:c:\users\juanc\desktop\practica1ed1\main.cpp
+	<iostream>
+	"Torneo.h"
+	"Comun.h"
+	<fstream>
+	<cstring>
+	"Clasificacion.h"
+	<iostream>
+	<vector>
+	<fstream>
+	<cstring>
+	"Torneo.h"
+	"Comun.h"
+	"Clasificacion.h"
+
+1745339810 c:\users\juanc\desktop\practica1ed1\torneo.h
+	"Comun.h"
+	"Golfistas.h"
+	<fstream>
+
+1741863818 c:\users\juanc\desktop\practica1ed1\golfistas.h
+
+1745485652 source:c:\users\juanc\desktop\practica1ed1\torneo.cpp
+	<iostream>
+	"Torneo.h"
+	<cstring>
+	"Comun.h"
+	<fstream>
+	"Clasificacion.h"
+	<ctime>
+	<cstdlib>
+

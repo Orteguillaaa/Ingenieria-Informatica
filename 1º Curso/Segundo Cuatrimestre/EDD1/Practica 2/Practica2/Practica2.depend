@@ -1,0 +1,60 @@
+# depslib dependency file v1.0
+1584209020 source:c:\users\juanc\onedrive\escritorio\ingenieria informatica\1er cuatrimestre\mp\practica 2\practica2\main.cpp
+	<iostream>
+
+1746701419 source:c:\users\juanc\onedrive\escritorio\ingenieria informatica\1er cuatrimestre\mp\practica 2\practica2\src\gestorservidores.cpp
+
+1746701505 source:c:\users\juanc\onedrive\escritorio\ingenieria informatica\1er cuatrimestre\mp\practica 2\practica2\src\servidor.cpp
+
+1746701534 source:c:\users\juanc\onedrive\escritorio\ingenieria informatica\1er cuatrimestre\mp\practica 2\practica2\src\lista.cpp
+	"lista.h"
+
+1746701131 c:\users\juanc\onedrive\escritorio\ingenieria informatica\1er cuatrimestre\mp\practica 2\practica2\include\lista.h
+	<iostream>
+
+1747907229 source:c:\users\juanc\onedrive\escritorio\ingenieria informatica\2 cuatri\estructuras de datos\practicas\practica 2\practica2\main.cpp
+	<iostream>
+
+1746701419 source:c:\users\juanc\onedrive\escritorio\ingenieria informatica\2 cuatri\estructuras de datos\practicas\practica 2\practica2\src\gestorservidores.cpp
+
+1747910664 source:c:\users\juanc\onedrive\escritorio\ingenieria informatica\2 cuatri\estructuras de datos\practicas\practica 2\practica2\src\lista.cpp
+	"lista.h"
+	<iostream>
+	<cstring>
+
+1747909492 c:\users\juanc\onedrive\escritorio\ingenieria informatica\2 cuatri\estructuras de datos\practicas\practica 2\practica2\include\lista.h
+	"comun.h"
+
+1746701505 source:c:\users\juanc\onedrive\escritorio\ingenieria informatica\2 cuatri\estructuras de datos\practicas\practica 2\practica2\src\servidor.cpp
+
+1747909557 source:c:\users\juanc\onedrive\escritorio\ingenieria informatica\2 cuatri\estructuras de datos\practicas\practica 2\practica2\src\cola.cpp
+	"cola.h"
+
+1747304111 c:\users\juanc\onedrive\escritorio\ingenieria informatica\2 cuatri\estructuras de datos\practicas\practica 2\practica2\include\cola.h
+	"comun.h"
+
+1747305910 c:\users\juanc\onedrive\escritorio\ingenieria informatica\2 cuatri\estructuras de datos\practicas\practica 2\practica2\include\comun.h
+	<iostream>
+	<cstring>
+
+1747907230 source:c:\users\juanc\desktop\ed1\practica 2\practica2\main.cpp
+	<iostream>
+
+1747909558 source:c:\users\juanc\desktop\ed1\practica 2\practica2\src\cola.cpp
+	"cola.h"
+
+1748445014 c:\users\juanc\desktop\ed1\practica 2\practica2\include\cola.h
+	"comun.h"
+
+1748445161 c:\users\juanc\desktop\ed1\practica 2\practica2\include\comun.h
+	<iostream>
+	<cstring>
+
+1747910666 source:c:\users\juanc\desktop\ed1\practica 2\practica2\src\lista.cpp
+	"lista.h"
+	<iostream>
+	<cstring>
+
+1748445025 c:\users\juanc\desktop\ed1\practica 2\practica2\include\lista.h
+	"comun.h"
+

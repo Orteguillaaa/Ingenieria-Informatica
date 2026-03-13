@@ -1,0 +1,62 @@
+#include <iostream>
+#include"Torneo.h"
+#include <cstring>
+
+using namespace std;
+
+Torneo::Torneo(){
+    numGolfistas=0;
+    cadena vacio="";
+    strcpy(nomFichero, vacio);
+    strcpy(nomTorneo, vacio);
+}
+
+Torneo::~Torneo(){
+
+}
+
+void Torneo::crearFichero(cadena n){
+    fichero.open(n, ios::binary|ios::in|ios::out);
+    if (fichero.fail()){
+        cout<<"Error al cargar el archivo, se va a crear otro de nombre "<<n<<endl;
+        fichero.close();
+        fichero.open(n, ios::binary|ios::out);
+        fichero.close();
+        if(!fichero.fail()){
+            fichero.open(n, ios::binary|ios::in|ios::out);
+            numGolfistas=0;
+            fichero.write((char*) &numGolfistas, sizeof(int));
+        }
+    }
+    else{
+        fichero.read((char*) &numGolfistas, sizeof(int));
+    }
+    strcpy(nomFichero, n);
+}
+
+void Torneo::mostrar(float hd){
+    cout <<"Numero de golfistas: "<<numGolfistas<<endl<<endl;
+    Golfista infoGolfistas[numGolfistas];
+    for (int i=0; i<numGolfistas; i++){
+        fichero.read((char*) &infoGolfistas[i], sizeof(Golfista));
+    }
+    for (int i=0; i<numGolfistas; i++){
+        if(hd==-1){
+        cout<<"Licencia: "<<infoGolfistas[i].licencia<<endl;
+        cout<<"Handicap: "<<infoGolfistas[i].handicap<<endl;
+        cout<<"Nombre: "<<infoGolfistas[i].nombre<<endl;
+        cout<<"Apellidos: "<<infoGolfistas[i].apellidos<<endl;
+        cout<<"Golpes: "<<infoGolfistas[i].golpes<<endl;
+        cout<<"Resultado: "<<infoGolfistas[i].resultado<<endl<<endl;}
+        else{
+            if(hd==infoGolfistas[i].handicap){
+            cout<<"Licencia: "<<infoGolfistas[i].licencia<<endl;
+            cout<<"Handicap: "<<infoGolfistas[i].handicap<<endl;
+            cout<<"Nombre: "<<infoGolfistas[i].nombre<<endl;
+            cout<<"Apellidos: "<<infoGolfistas[i].apellidos<<endl;
+            cout<<"Golpes: "<<infoGolfistas[i].golpes<<endl;
+            cout<<"Resultado: "<<infoGolfistas[i].resultado<<endl<<endl;
+            }
+        }
+    }
+}
