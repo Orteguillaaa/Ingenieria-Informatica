@@ -1,0 +1,327 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+P1.exe -- emu8086 assembler version: 4.08  
+ 
+[ 03/12/2025  --  0:38:59 ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       .MODEL SMALL
+[   2]        :                                       .STACK 100h
+[   3]        :                                       
+[   4]        :                                       .DATA
+[   5]    0100: 05 00 00 00 00 00 00                  CADENA    DB 5,0,0,0,0,0,0        ; buffer para INT 21h AH=0Ah
+[   6]    0107: 08 04 02 01                           PESO      DB 8,4,2,1
+[   7]    010B: 00                                    DEC_NAT   DB ?
+[   8]    010C: 00                                    DEC_COMP  DB ?
+[   9]    010D: 00                                    SIGNO     DB ?
+[  10]    010E: 0D 0A 49 6E 74 72 6F 64 75 63 65 20   MSG1      DB 13,10,'Introduce un numero binario de 4 bits: $'
+                75 6E 20 6E 75 6D 65 72 6F 20 62 69 
+                6E 61 72 69 6F 20 64 65 20 34 20 62 
+                69 74 73 3A 20 24                   
+[  11]    0138: 0D 0A 42 69 6E 61 72 69 6F 20 6E 61   MSG2      DB 13,10,'Binario natural (decimal): $'
+                74 75 72 61 6C 20 28 64 65 63 69 6D 
+                61 6C 29 3A 20 24                   
+[  12]    0156: 0D 0A 43 6F 6D 70 6C 65 6D 65 6E 74   MSG3      DB 13,10,'Complemento a 1 (decimal): $'
+                6F 20 61 20 31 20 28 64 65 63 69 6D 
+                61 6C 29 3A 20 24                   
+[  13]    0174: 0F                                    ALATTR    DB 0Fh                  ; atributo: blanco sobre negro
+[  14]    0175: 00                                    TempChar  DB ?
+[  15]        :                                       
+[  16]        :                                       .CODE
+[  17]    0180:                                       MAIN PROC
+[  18]        :                                       ; Inicializar segmentos
+[  19]    0180: B8 10 00                              MOV AX, @DATA
+[  20]    0183: 8E D8                                 MOV DS, AX
+[  21]        :                                       
+[  22]        :                                       ; Inicializar ES al segmento de vídeo B800h
+[  23]    0185: B8 00 B8                              MOV AX, 0B800h
+[  24]    0188: 8E C0                                 MOV ES, AX
+[  25]        :                                       
+[  26]        :                                       ; ----------------------------
+[  27]        :                                       ; Mostrar MSG1 en memoria de vídeo (fila 0, col 0)
+[  28]        :                                       ; ----------------------------
+[  29]    018A: BE 0E 00                              LEA SI, MSG1
+[  30]    018D: BF 00 00                              MOV DI, 0                ; fila 0, col 0 -> offset bytes = 0
+[  31]    0190: 8A 1E 74 00                           MOV BL, [ALATTR]
+[  32]    0194: E8 64 01                              CALL PrintDollarStringToVideo
+[  33]        :                                       
+[  34]        :                                       ; ---------------------------------------------------------
+[  35]        :                                       ; MOVER EL CURSOR DE BIOS A LA LÍNEA SIGUIENTE (fila 1, col 0)
+[  36]        :                                       ; De esta forma la entrada por teclado aparecerá en la línea
+[  37]        :                                       ; siguiente y no sobrescribirá el prompt impreso en vídeo.
+[  38]        :                                       ; INT 10h AH=02h -> set cursor position
+[  39]        :                                       ; BH = page (0), DH = row, DL = col
+[  40]        :                                       ; ---------------------------------------------------------
+[  41]    0197: B4 02                                 MOV AH, 02h
+[  42]    0199: B7 00                                 MOV BH, 0
+[  43]    019B: B6 01                                 MOV DH, 1                ; fila 1
+[  44]    019D: B2 00                                 MOV DL, 0                ; columna 0
+[  45]    019F: CD 10                                 INT 10h
+[  46]        :                                       
+[  47]        :                                       ; Leer la cadena por teclado con INT 21h AH=0Ah (igual que antes)
+[  48]    01A1: BA 00 00                              LEA DX, CADENA
+[  49]    01A4: B4 0A                                 MOV AH, 0Ah
+[  50]    01A6: CD 21                                 INT 21h
+[  51]        :                                       
+[  52]        :                                       ; Convertir ASCII '0'/'1' a 0/1 (igual que tu código original)
+[  53]    01A8: 80 2E 02 00 30                        SUB CADENA[2], 48
+[  54]    01AD: 80 2E 03 00 30                        SUB CADENA[3], 48
+[  55]    01B2: 80 2E 04 00 30                        SUB CADENA[4], 48
+[  56]    01B7: 80 2E 05 00 30                        SUB CADENA[5], 48
+[  57]        :                                       
+[  58]        :                                       ; Determinar SIGNO (MSB = CADENA[2])
+[  59]    01BC: A0 02 00                              MOV AL, CADENA[2]
+[  60]    01BF: 3C 01                                 CMP AL, 1
+[  61]    01C1: 74 07                                 JE ES_NEGATIVO
+[  62]    01C3: C6 06 0D 00 00                        MOV SIGNO, 0
+[  63]    01C8: EB 05                                 JMP SEGUIR
+[  64]    01CA:                                       ES_NEGATIVO:
+[  65]    01CA: C6 06 0D 00 01                        MOV SIGNO, 1
+[  66]    01CF:                                       SEGUIR:
+[  67]        :                                       ; ----------------------------
+[  68]        :                                       ; Cálculo DEC_NAT (igual al original)
+[  69]        :                                       ; ----------------------------
+[  70]    01CF: A0 02 00                              MOV AL, CADENA[2]
+[  71]    01D2: F6 26 07 00                           MUL PESO[0]
+[  72]    01D6: A2 0B 00                              MOV DEC_NAT, AL
+[  73]        :                                       
+[  74]    01D9: A0 03 00                              MOV AL, CADENA[3]
+[  75]    01DC: F6 26 08 00                           MUL PESO[1]
+[  76]    01E0: 00 06 0B 00                           ADD DEC_NAT, AL
+[  77]        :                                       
+[  78]    01E4: A0 04 00                              MOV AL, CADENA[4]
+[  79]    01E7: F6 26 09 00                           MUL PESO[2]
+[  80]    01EB: 00 06 0B 00                           ADD DEC_NAT, AL
+[  81]        :                                       
+[  82]    01EF: A0 05 00                              MOV AL, CADENA[5]
+[  83]    01F2: F6 26 0A 00                           MUL PESO[3]
+[  84]    01F6: 00 06 0B 00                           ADD DEC_NAT, AL
+[  85]        :                                       
+[  86]        :                                       ; ----------------------------
+[  87]        :                                       ; Mostrar MSG2 en vídeo (fila 2, col 0)
+[  88]        :                                       ; ----------------------------
+[  89]    01FA: BE 38 00                              LEA SI, MSG2
+[  90]    01FD: BF 40 01                              MOV DI, 320              ; fila 2 -> (2*80)*2 = 320 bytes
+[  91]    0200: 8A 1E 74 00                           MOV BL, [ALATTR]
+[  92]    0204: E8 F4 00                              CALL PrintDollarStringToVideo
+[  93]        :                                       
+[  94]        :                                       ; Imprimir DEC_NAT (0..15) en la celda siguiente
+[  95]    0207: B4 00                                 MOV AH, 0
+[  96]    0209: B3 0A                                 MOV BL, 10
+[  97]    020B: A0 0B 00                              MOV AL, DEC_NAT
+[  98]    020E: F6 F3                                 DIV BL                   ; AL = decena, AH = unidad
+[  99]        :                                       
+[ 100]    0210: 3C 00                                 CMP AL, 0
+[ 101]    0212: 74 11                                 JE NAT_UNO_ONLY
+[ 102]        :                                       
+[ 103]    0214: 50                                    PUSH AX
+[ 104]    0215: 04 30                                 ADD AL, 48
+[ 105]    0217: A2 75 00                              MOV TempChar, AL
+[ 106]    021A: A0 75 00                              MOV AL, TempChar
+[ 107]    021D: 8A 1E 74 00                           MOV BL, [ALATTR]
+[ 108]    0221: E8 ED 00                              CALL PrintCharToVideo
+[ 109]    0224: 58                                    POP AX
+[ 110]        :                                       
+[ 111]    0225:                                       NAT_UNO_ONLY:
+[ 112]    0225: 80 C4 30                              ADD AH, 48
+[ 113]    0228: 8A C4                                 MOV AL, AH
+[ 114]    022A: 8A 1E 74 00                           MOV BL, [ALATTR]
+[ 115]    022E: E8 E0 00                              CALL PrintCharToVideo
+[ 116]        :                                       
+[ 117]        :                                       ; ----------------------------
+[ 118]        :                                       ; Preparar Complemento a 1: si SIGNO=1 invertir bits de CADENA[2..5]
+[ 119]        :                                       ; ----------------------------
+[ 120]    0231: 80 3E 0D 00 01                        CMP SIGNO, 1
+[ 121]    0236: 75 0D                                 JNE NO_COMP_2
+[ 122]    0238: 8A 1E 02 00                           MOV BL, CADENA[2]
+[ 123]    023C: F6 D3                                 NOT BL
+[ 124]    023E: 80 E3 01                              AND BL, 1
+[ 125]    0241: 88 1E 02 00                           MOV CADENA[2], BL
+[ 126]    0245:                                       NO_COMP_2:
+[ 127]    0245: 80 3E 0D 00 01                        CMP SIGNO, 1
+[ 128]    024A: 75 0D                                 JNE NO_COMP_3
+[ 129]    024C: 8A 1E 03 00                           MOV BL, CADENA[3]
+[ 130]    0250: F6 D3                                 NOT BL
+[ 131]    0252: 80 E3 01                              AND BL, 1
+[ 132]    0255: 88 1E 03 00                           MOV CADENA[3], BL
+[ 133]    0259:                                       NO_COMP_3:
+[ 134]    0259: 80 3E 0D 00 01                        CMP SIGNO, 1
+[ 135]    025E: 75 0D                                 JNE NO_COMP_4
+[ 136]    0260: 8A 1E 04 00                           MOV BL, CADENA[4]
+[ 137]    0264: F6 D3                                 NOT BL
+[ 138]    0266: 80 E3 01                              AND BL, 1
+[ 139]    0269: 88 1E 04 00                           MOV CADENA[4], BL
+[ 140]    026D:                                       NO_COMP_4:
+[ 141]    026D: 80 3E 0D 00 01                        CMP SIGNO, 1
+[ 142]    0272: 75 0D                                 JNE NO_COMP_5
+[ 143]    0274: 8A 1E 05 00                           MOV BL, CADENA[5]
+[ 144]    0278: F6 D3                                 NOT BL
+[ 145]    027A: 80 E3 01                              AND BL, 1
+[ 146]    027D: 88 1E 05 00                           MOV CADENA[5], BL
+[ 147]    0281:                                       NO_COMP_5:
+[ 148]        :                                       
+[ 149]        :                                       ; ----------------------------
+[ 150]        :                                       ; Cálculo DEC_COMP (igual al original)
+[ 151]        :                                       ; ----------------------------
+[ 152]    0281: A0 02 00                              MOV AL, CADENA[2]
+[ 153]    0284: F6 26 07 00                           MUL PESO[0]
+[ 154]    0288: A2 0C 00                              MOV DEC_COMP, AL
+[ 155]        :                                       
+[ 156]    028B: A0 03 00                              MOV AL, CADENA[3]
+[ 157]    028E: F6 26 08 00                           MUL PESO[1]
+[ 158]    0292: 00 06 0C 00                           ADD DEC_COMP, AL
+[ 159]        :                                       
+[ 160]    0296: A0 04 00                              MOV AL, CADENA[4]
+[ 161]    0299: F6 26 09 00                           MUL PESO[2]
+[ 162]    029D: 00 06 0C 00                           ADD DEC_COMP, AL
+[ 163]        :                                       
+[ 164]    02A1: A0 05 00                              MOV AL, CADENA[5]
+[ 165]    02A4: F6 26 0A 00                           MUL PESO[3]
+[ 166]    02A8: 00 06 0C 00                           ADD DEC_COMP, AL
+[ 167]        :                                       
+[ 168]        :                                       ; ----------------------------
+[ 169]        :                                       ; Mostrar MSG3 en vídeo (fila 4, col 0)
+[ 170]        :                                       ; ----------------------------
+[ 171]    02AC: BE 56 00                              LEA SI, MSG3
+[ 172]    02AF: BF 80 02                              MOV DI, 640              ; fila 4 -> (4*80)*2 = 640 bytes
+[ 173]    02B2: 8A 1E 74 00                           MOV BL, [ALATTR]
+[ 174]    02B6: E8 42 00                              CALL PrintDollarStringToVideo
+[ 175]        :                                       
+[ 176]        :                                       ; Si SIGNO=1 imprimir '-'
+[ 177]    02B9: 80 3E 0D 00 01                        CMP SIGNO, 1
+[ 178]    02BE: 75 09                                 JNE NO_SIGNO
+[ 179]    02C0: B0 2D                                 MOV AL, '-'
+[ 180]    02C2: 8A 1E 74 00                           MOV BL, [ALATTR]
+[ 181]    02C6: E8 48 00                              CALL PrintCharToVideo
+[ 182]    02C9:                                       NO_SIGNO:
+[ 183]        :                                       
+[ 184]        :                                       ; Imprimir DEC_COMP en vídeo
+[ 185]    02C9: B4 00                                 MOV AH, 0
+[ 186]    02CB: B3 0A                                 MOV BL, 10
+[ 187]    02CD: A0 0C 00                              MOV AL, DEC_COMP
+[ 188]    02D0: F6 F3                                 DIV BL
+[ 189]        :                                       
+[ 190]    02D2: 3C 00                                 CMP AL, 0
+[ 191]    02D4: 74 11                                 JE COMP_UNO_ONLY
+[ 192]        :                                       
+[ 193]    02D6: 50                                    PUSH AX
+[ 194]    02D7: 04 30                                 ADD AL, 48
+[ 195]    02D9: A2 75 00                              MOV TempChar, AL
+[ 196]    02DC: A0 75 00                              MOV AL, TempChar
+[ 197]    02DF: 8A 1E 74 00                           MOV BL, [ALATTR]
+[ 198]    02E3: E8 2B 00                              CALL PrintCharToVideo
+[ 199]    02E6: 58                                    POP AX
+[ 200]        :                                       
+[ 201]    02E7:                                       COMP_UNO_ONLY:
+[ 202]    02E7: 80 C4 30                              ADD AH, 48
+[ 203]    02EA: 8A C4                                 MOV AL, AH
+[ 204]    02EC: 8A 1E 74 00                           MOV BL, [ALATTR]
+[ 205]    02F0: E8 1E 00                              CALL PrintCharToVideo
+[ 206]        :                                       
+[ 207]        :                                       ; Pausa: esperar tecla (igual que original; AH=00h INT 16h)
+[ 208]    02F3: B4 00                                 MOV AH, 00h
+[ 209]    02F5: CD 16                                 INT 16h
+[ 210]        :                                       
+[ 211]        :                                       ; Terminar programa
+[ 212]    02F7: B4 4C                                 MOV AH, 4Ch
+[ 213]    02F9: CD 21                                 INT 21h
+[ 214]        :                                       
+[ 215]        :                                       MAIN ENDP
+[ 216]        :                                       
+[ 217]        :                                       ; --------------------------------------------
+[ 218]        :                                       ; Rutina: PrintDollarStringToVideo
+[ 219]        :                                       ;   DS:SI -> cadena terminada en '$'
+[ 220]        :                                       ;   ES:DI -> posición inicial en memoria de vídeo (bytes)
+[ 221]        :                                       ;   BL     -> atributo
+[ 222]        :                                       ;   Deja DI apuntando a la siguiente celda libre
+[ 223]        :                                       ; --------------------------------------------
+[ 224]    02FB:                                       PrintDollarStringToVideo PROC
+[ 225]    02FB: 50                                    PUSH AX
+[ 226]    02FC: 53                                    PUSH BX
+[ 227]    02FD: 51                                    PUSH CX
+[ 228]    02FE:                                       .loop_write:
+[ 229]    02FE: AC                                    LODSB
+[ 230]    02FF: 3C 24                                 CMP AL, '$'
+[ 231]    0301: 74 0A                                 JE .done_write
+[ 232]    0303: 8A E3                                 MOV AH, BL
+[ 233]    0305: 26 89 05                              MOV ES:[DI], AX
+[ 234]    0308: 83 C7 02                              ADD DI, 2
+[ 235]    030B: EB F1                                 JMP .loop_write
+[ 236]    030D:                                       .done_write:
+[ 237]    030D: 59                                    POP CX
+[ 238]    030E: 5B                                    POP BX
+[ 239]    030F: 58                                    POP AX
+[ 240]    0310: C3                                    RET
+[ 241]        :                                       PrintDollarStringToVideo ENDP
+[ 242]        :                                       
+[ 243]        :                                       ; --------------------------------------------
+[ 244]        :                                       ; Rutina: PrintCharToVideo
+[ 245]        :                                       ;   AL = ASCII a imprimir
+[ 246]        :                                       ;   BL = atributo
+[ 247]        :                                       ;   ES:DI = posición donde escribir
+[ 248]        :                                       ;   Incrementa DI en 2
+[ 249]        :                                       ; --------------------------------------------
+[ 250]    0311:                                       PrintCharToVideo PROC
+[ 251]    0311: 50                                    PUSH AX
+[ 252]    0312: 8A E3                                 MOV AH, BL
+[ 253]    0314: 26 89 05                              MOV ES:[DI], AX
+[ 254]    0317: 83 C7 02                              ADD DI, 2
+[ 255]    031A: 58                                    POP AX
+[ 256]    031B: C3                                    RET
+[ 257]        :                                       PrintCharToVideo ENDP
+[ 258]        :                                       
+[ 259]        :                                       END MAIN
+[ 260]        :                                       
+[ 261]        :                                       
+[ 262]        :                                       
+[ 263]        :                                       
+[ 264]        :                                       
+[ 265]        :                                       
+ 
+===================================================================================================
+ 
+EXE HEADER - bytes from 0000 to 01FF inclusive.
+
+0000: 4D      -   exe signature (M)
+0001: 5A      -   exe signature (Z)
+0002: 1C      -   bytes on last page (l.byte)
+0003: 01      -   bytes on last page (h.byte)
+0004: 03      -   512 byte pages in file (l.byte)
+0005: 00      -   512 byte pages in file (h.byte)
+0006: 01      -   relocations (l.byte)
+0007: 00      -   relocations (h.byte)
+0008: 20      -   paragraphs in header (l.byte)
+0009: 00      -   paragraphs in header (h.byte)
+000A: 00      -   minimum memory (l.byte)
+000B: 00      -   minimum memory (h.byte)
+000C: FF      -   maximum memory (l.byte)
+000D: FF      -   maximum memory (h.byte)
+000E: 00      -   SS - stack segment (l.byte)
+000F: 00      -   SS - stack segment (h.byte)
+0010: 00      -   SP - stack pointer (l.byte)
+0011: 01      -   SP - stack pointer (h.byte)
+0012: 53      -   check sum (l.byte)
+0013: F8      -   check sum (h.byte)
+0014: 00      -   IP - instruction pointer (l.byte)
+0015: 00      -   IP - instruction pointer (h.byte)
+0016: 18      -   CS - code segment (l.byte)
+0017: 00      -   CS - code segment (h.byte)
+0018: 1E      -   relocation table adress (l.byte)
+0019: 00      -   relocation table adress (h.byte)
+001A: 00      -   overlay number (l.byte)
+001B: 00      -   overlay number (h.byte)
+001C: 01      -   signature (l.byte)
+001D: 00      -   signature (h.byte)
+001E: 01      -   relocation table - offset inside segment (l.byte)
+001F: 00      -   relocation table - offset inside segment (h.byte)
+0020: 18      -   relocation table - segment anchor (l.byte)
+0021: 00      -   relocation table - segment anchor (h.byte)
+0022 to 01FF  -   reserved relocation area  (00) 
+
+
+
+
+===================================================================================================

@@ -1,0 +1,136 @@
+.MODEL SMALL                ; Directiva — APARECE en PDF
+.STACK 100h                 ; Directiva — APARECE en PDF
+
+.DATA                       ; Directiva — APARECE en PDF
+CADENA DB 5,0,0,0,0,0,0     ; DB — APARECE en PDF
+PESO   DB 8,4,2,1           ; DB — APARECE en PDF
+DEC_NAT DB ?                ; DB — APARECE en PDF
+DEC_COMP DB ?               ; DB — APARECE en PDF
+MSG1 DB 13,10,'Introduce un numero binario de 4 bits: $'  ; DB — APARECE
+MSG2 DB 13,10,'Binario natural (decimal): $'              ; DB — APARECE
+MSG3 DB 13,10,'Complemento a 1 (decimal): $'              ; DB — APARECE
+
+.CODE                       ; Directiva — APARECE en PDF
+MOV AX, @DATA           ; MOV — APARECE
+MOV DS, AX              ; MOV — APARECE
+
+MOV AH, 09h             ; MOV — APARECE
+LEA DX, MSG1            ; LEA — APARECE
+INT 21h                 ; INT — APARECE (PDF prácticas)
+
+MOV AH, 0Ah             ; MOV — APARECE
+LEA DX, CADENA          ; LEA — APARECE
+INT 21h                 ; INT — APARECE
+
+SUB CADENA[2], 48       ; SUB — APARECE
+SUB CADENA[3], 48       ; SUB — APARECE
+SUB CADENA[4], 48       ; SUB — APARECE
+SUB CADENA[5], 48       ; SUB — APARECE
+
+MOV AL, 0               ; MOV — APARECE
+MOV AL, CADENA[2]       ; MOV — APARECE
+MUL PESO[0]             ; MUL — APARECE
+MOV DEC_NAT, AL         ; MOV — APARECE
+MOV AL, CADENA[3]       ; MOV — APARECE
+MUL PESO[1]             ; MUL — APARECE
+ADD DEC_NAT, AL         ; ADD — APARECE
+MOV AL, CADENA[4]       ; MOV — APARECE
+MUL PESO[2]             ; MUL — APARECE
+ADD DEC_NAT, AL         ; ADD — APARECE
+MOV AL, CADENA[5]       ; MOV — APARECE
+MUL PESO[3]             ; MUL — APARECE
+ADD DEC_NAT, AL         ; ADD — APARECE
+
+MOV AH, 09h             ; MOV — APARECE
+LEA DX, MSG2            ; LEA — APARECE
+INT 21h                 ; INT — APARECE
+
+MOV AH, 0               ; MOV — APARECE
+MOV BL, 10              ; MOV — APARECE
+MOV AL, DEC_NAT         ; MOV — APARECE
+DIV BL                  ; DIV — APARECE
+CMP AL, 0               ; CMP — APARECE
+JE DEC_UNO              ; JE — APARECE
+PUSH AX                 ; PUSH — APARECE
+MOV AH, 0               ; MOV — APARECE
+MOV BL, 10              ; MOV — APARECE
+DIV BL                  ; DIV — APARECE
+ADD AH, 48              ; ADD — APARECE
+MOV DL, AH              ; MOV — APARECE
+MOV AH, 02h             ; MOV — APARECE
+INT 21h                 ; INT — APARECE
+POP AX                  ; POP — APARECE
+DEC_UNO:
+ADD AH, 48              ; ADD — APARECE
+MOV DL, AH              ; MOV — APARECE
+MOV AH, 02h             ; MOV — APARECE
+INT 21h                 ; INT — APARECE
+
+MOV BL, CADENA[2]       ; MOV — APARECE
+NOT BL                  ; NOT — APARECE
+AND BL, 1               ; AND — APARECE
+MOV CADENA[2], BL       ; MOV — APARECE
+MOV BL, CADENA[3]       ; MOV — APARECE
+NOT BL                  ; NOT — APARECE
+AND BL, 1               ; AND — APARECE
+MOV CADENA[3], BL       ; MOV — APARECE
+MOV BL, CADENA[4]       ; MOV — APARECE
+NOT BL                  ; NOT — APARECE
+AND BL, 1               ; AND — APARECE
+MOV CADENA[4], BL       ; MOV — APARECE
+MOV BL, CADENA[5]       ; MOV — APARECE
+NOT BL                  ; NOT — APARECE
+AND BL, 1               ; AND — APARECE
+MOV CADENA[5], BL       ; MOV — APARECE
+
+MOV AL, 0               ; MOV — APARECE
+MOV AL, CADENA[2]       ; MOV — APARECE
+MUL PESO[0]             ; MUL — APARECE
+MOV DEC_COMP, AL        ; MOV — APARECE
+MOV AL, CADENA[3]       ; MOV — APARECE
+MUL PESO[1]             ; MUL — APARECE
+ADD DEC_COMP, AL        ; ADD — APARECE
+MOV AL, CADENA[4]       ; MOV — APARECE
+MUL PESO[2]             ; MUL — APARECE
+ADD DEC_COMP, AL        ; ADD — APARECE
+MOV AL, CADENA[5]       ; MOV — APARECE
+MUL PESO[3]             ; MUL — APARECE
+ADD DEC_COMP, AL        ; ADD — APARECE
+
+MOV AH, 09h             ; MOV — APARECE
+LEA DX, MSG3            ; LEA — APARECE
+INT 21h                 ; INT — APARECE
+
+MOV AH, 0               ; MOV — APARECE
+MOV BL, 10              ; MOV — APARECE
+MOV AL, DEC_COMP        ; MOV — APARECE
+DIV BL                  ; DIV — APARECE
+CMP AL, 0               ; CMP — APARECE
+JE COMP_UNO             ; JE — APARECE
+PUSH AX                 ; PUSH — APARECE
+MOV AH, 0               ; MOV — APARECE
+MOV BL, 10              ; MOV — APARECE
+DIV BL                  ; DIV — APARECE
+ADD AH, 48              ; ADD — APARECE
+MOV DL, AH              ; MOV — APARECE
+MOV AH, 02h             ; MOV — APARECE
+INT 21h                 ; INT — APARECE
+POP AX                  ; POP — APARECE
+COMP_UNO:
+ADD AH, 48              ; ADD — APARECE
+MOV DL, AH              ; MOV — APARECE
+MOV AH, 02h             ; MOV — APARECE
+INT 21h                 ; INT — APARECE
+
+MOV AH, 00h             ; MOV — APARECE
+INT 16h                 ; INT — APARECE (PDF práctica)
+
+MOV AH, 4Ch             ; MOV — APARECE
+INT 21h                 ; INT — APARECE
+
+END                         ; Directiva — APARECE en PDF
+
+
+
+
+; [SOURCE]: C:\Users\juanc\Downloads\wuolah-free-Ejercicio-1-Modificado-Final.asm

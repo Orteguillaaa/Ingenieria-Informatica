@@ -1,0 +1,183 @@
+.MODEL SMALL                ; Define el modelo de memoria SMALL: 1 segmento de código y 1 segmento de datos.
+
+.STACK 100h                 ; Reserva 0x100 bytes (256) para la pila; necesario para PUSH/POP e interrupciones.
+
+.DATA                       ; Inicio del segmento de datos, donde se declaran variables y cadenas.
+
+CADENA DB 5,0,0,0,0,0,0     ; Buffer para INT 21h AH=0Ah: byte0=max chars (5), byte1=long real, bytes siguientes=caracteres+CR.
+PESO   DB 8,4,2,1           ; Tabla de pesos para bits: 8,4,2,1 (2^3..2^0) usada para convertir binario a decimal.
+DEC_NAT DB ?                ; Variable (byte) donde se almacenará el resultado en binario natural (decimal).
+DEC_COMP DB ?               ; Variable (byte) donde se almacenará el resultado del complemento a 1 (decimal).
+SIGNO DB ?                  ; Flag: 0 = positivo (MSB=0), 1 = negativo (MSB=1) según petición del usuario.
+
+MSG1 DB 13,10,'Introduce un número binario de 4 bits: $'   ; Mensaje para pedir al usuario la cadena binaria.
+MSG2 DB 13,10,'Binario natural (decimal): $'               ; Mensaje que precede al resultado natural.
+MSG3 DB 13,10,'Complemento a 1 (decimal): $'               ; Mensaje que precede al resultado del complemento a 1.
+
+.CODE                       ; Inicio del segmento de código ejecutable.
+
+    MOV AX, @DATA           ; Cargar en AX el valor del segmento de datos (dirección del segmento .DATA).
+    MOV DS, AX              ; Inicializar DS con AX para que las referencias a variables en .DATA funcionen.
+
+    MOV AH, 09h             ; AH=09h prepara la función DOS INT 21h para mostrar una cadena terminada en '$'.
+    LEA DX, MSG1            ; LEA carga en DX el offset (dirección relativa) de MSG1 para INT 21h.
+    INT 21h                 ; Llamada a DOS para imprimir MSG1 en pantalla.
+
+    MOV AH, 0Ah             ; AH=0Ah prepara la función DOS INT 21h para leer una cadena con buffer (formato CADENA).
+    LEA DX, CADENA          ; DX = offset del buffer CADENA donde DOS escribirá la entrada.
+    INT 21h                 ; Llamada a DOS: espera entrada y guarda los caracteres en CADENA.
+
+    SUB CADENA[2], 48       ; Convierte ASCII '0'/'1' en 0/1 restando 48 ('0') al tercer byte del buffer.
+    SUB CADENA[3], 48       ; Convierte ASCII a valor numérico para el segundo bit.
+    SUB CADENA[4], 48       ; Convierte ASCII a valor numérico para el tercer bit.
+    SUB CADENA[5], 48       ; Convierte ASCII a valor numérico para el cuarto bit.
+
+    MOV AL, CADENA[2]       ; Cargar el bit más significativo (MSB) en AL para comprobar signo.
+    CMP AL, 1               ; Comparar AL con 1: si MSB==1 entonces se considera "negativo" según la regla pedida.
+    JE ES_NEGATIVO          ; Si MSB==1 saltar a la etiqueta ES_NEGATIVO para marcar SIGNO=1.
+
+    MOV SIGNO, 0            ; Si no saltó, MSB es 0: marcar SIGNO=0 (positivo).
+    JMP SEGUIR              ; Saltar la parte de etiquetado de negativo y continuar el flujo normal.
+
+ES_NEGATIVO:                ; Etiqueta que indica que el número fue marcado como negativo. (leyenda/registro)
+    MOV SIGNO, 1            ; Guardar 1 en SIGNO para indicar que MSB era 1 (negativo).
+    ; Después de esto se continúa en la siguiente instrucción (flujo cae a SEGUIR en ejecución).
+
+SEGUIR:                     ; Punto de continuación tras determinar SIGNO; sigue la conversión a decimal natural.
+    MOV AL, CADENA[2]       ; Carga el primer bit (MSB) de la cadena en AL para multiplicar por su peso.
+    MUL PESO[0]             ; Multiplica AL por PESO[0] (8); producto queda en AX (AL=low, AH=high).
+    MOV DEC_NAT, AL         ; Guarda el resultado (byte bajo) en DEC_NAT como acumulado parcial.
+
+    MOV AL, CADENA[3]       ; Carga el segundo bit en AL.
+    MUL PESO[1]             ; Multiplica AL por PESO[1] (4); resultado en AX.
+    ADD DEC_NAT, AL         ; Suma el byte resultante AL a DEC_NAT acumulando la contribución.
+
+    MOV AL, CADENA[4]       ; Carga el tercer bit en AL.
+    MUL PESO[2]             ; Multiplica AL por PESO[2] (2); resultado en AX.
+    ADD DEC_NAT, AL         ; Añade la contribución al acumulado en DEC_NAT.
+
+    MOV AL, CADENA[5]       ; Carga el cuarto bit (LSB) en AL.
+    MUL PESO[3]             ; Multiplica AL por PESO[3] (1); resultado en AX.
+    ADD DEC_NAT, AL         ; Suma la última contribución: DEC_NAT = 8*b0 + 4*b1 + 2*b2 + 1*b3.
+
+    MOV AH, 09h             ; Preparar AH=09h para mostrar el mensaje MSG2 antes del número natural.
+    LEA DX, MSG2            ; Cargar en DX el offset de MSG2.
+    INT 21h                 ; Mostrar la cadena MSG2 en pantalla.
+
+    MOV AH, 0               ; Poner AH=0 para asegurarnos de que AX contiene el valor correcto antes de DIV.
+    MOV BL, 10              ; BL = 10, divisor para separar decenas y unidades (decimal base 10).
+    MOV AL, DEC_NAT         ; AL = valor a convertir (0..15).
+    DIV BL                  ; Divide AX entre BL: cociente->AL, resto->AH (importante la convención).
+    CMP AL, 0               ; Comprobar si el cociente (decenas) es 0.
+    JE NAT_UNO              ; Si AL==0 no hay decena; saltamos a NAT_UNO para imprimir unidad solamente.
+
+    PUSH AX                 ; Guardar AX en pila para preservar resultados antes de imprimir el dígito de decena.
+    MOV AH, 0               ; Poner AH=0 para preparar AX antes de nueva DIV (asegurar dividendo correcto).
+    MOV BL, 10              ; BL = 10 (asegurar divisor correcto para la segunda división).
+    DIV BL                  ; Dividir AX entre 10: ahora AL contiene la decena, AH la unidad (resto).
+    ADD AH, 48              ; Convertir la cifra en AH a su código ASCII sumando 48 ('0').
+    MOV DL, AH              ; Mover ASCII de la decena a DL para la función AH=02h de INT 21h.
+    MOV AH, 02h             ; AH=02h prepara la función DOS para mostrar un solo carácter en DL.
+    INT 21h                 ; Mostrar la decena en pantalla.
+    POP AX                  ; Recuperar AX desde la pila para continuar con la impresión de la unidad.
+
+NAT_UNO:                    ; Etiqueta para impresión cuando sólo hay unidad (sin decena).
+    ADD AH, 48              ; Convertir la unidad (en AH) a ASCII sumando 48.
+    MOV DL, AH              ; Mover ASCII de la unidad a DL para salida.
+    MOV AH, 02h             ; AH=02h prepara la función INT 21h para mostrar carácter.
+    INT 21h                 ; Mostrar la unidad en pantalla (finaliza impresión del número natural).
+
+    CMP SIGNO, 1            ; Comprobar si SIGNO indica negativo (1) para decidir si calcular complemento real.
+    JNE NO_COMP_2           ; Si SIGNO != 1 (es decir, positivo) saltar a NO_COMP_2 (no invertir bit 2).
+
+    MOV BL, CADENA[2]       ; Cargar en BL el contenido actual de CADENA[2] para invertirlo.
+    NOT BL                  ; Invertir todos los bits del registro BL (complemento bit a bit).
+    AND BL, 1               ; Mantener solamente el LSB (0 o 1) tras la inversión.
+    MOV CADENA[2], BL       ; Guardar de vuelta en CADENA[2] el bit invertido (ahora 0 o 1).
+NO_COMP_2:                  ; Punto de continuación si no se debía invertir el bit 2 o después de invertirlo.
+
+    CMP SIGNO, 1            ; Repetir la misma lógica para el siguiente bit: comprobar SIGNO.
+    JNE NO_COMP_3           ; Si no es negativo saltar a NO_COMP_3.
+
+    MOV BL, CADENA[3]       ; Cargar CADENA[3] en BL para invertirlo.
+    NOT BL                  ; Invertir todos los bits de BL.
+    AND BL, 1               ; Enmascarar para conservar sólo el bit menos significativo.
+    MOV CADENA[3], BL       ; Escribir el bit invertido en CADENA[3].
+NO_COMP_3:                  ; Continuación si no había que invertir o tras invertir CADENA[3].
+
+    CMP SIGNO, 1            ; Comprobar de nuevo SIGNO antes de procesar el tercer bit.
+    JNE NO_COMP_4           ; Si no es negativo saltar a NO_COMP_4.
+
+    MOV BL, CADENA[4]       ; Cargar CADENA[4] (tercer bit) en BL.
+    NOT BL                  ; Invertir BL bit a bit.
+    AND BL, 1               ; Mantener solo LSB para obtener 0/1.
+    MOV CADENA[4], BL       ; Guardar de vuelta el bit invertido en CADENA[4].
+NO_COMP_4:                  ; Continuación si no había que invertir o tras invertir CADENA[4].
+
+    CMP SIGNO, 1            ; Última comprobación de SIGNO para el cuarto bit (LSB).
+    JNE NO_COMP_5           ; Si no es negativo saltar a NO_COMP_5.
+
+    MOV BL, CADENA[5]       ; Cargar CADENA[5] (cuarto bit) en BL.
+    NOT BL                  ; Invertir BL.
+    AND BL, 1               ; Conservar sólo el bit menos significativo (0/1).
+    MOV CADENA[5], BL       ; Guardar el bit invertido en CADENA[5].
+NO_COMP_5:                  ; Continuación tras la posible inversión del último bit.
+
+    MOV AL, CADENA[2]       ; Cargar el (posible) primer bit (ya invertido si SIGNO=1) para convertir a decimal.
+    MUL PESO[0]             ; Multiplicar AL * 8; resultado en AX.
+    MOV DEC_COMP, AL        ; Guardar resultado parcial en DEC_COMP.
+
+    MOV AL, CADENA[3]       ; Cargar segundo bit complementado (o original si no hubo inversión).
+    MUL PESO[1]             ; Multiplicar AL * 4.
+    ADD DEC_COMP, AL        ; Sumar la contribución al acumulado DEC_COMP.
+
+    MOV AL, CADENA[4]       ; Cargar tercer bit (complementado o no).
+    MUL PESO[2]             ; Multiplicar AL * 2.
+    ADD DEC_COMP, AL        ; Añadir al acumulado DEC_COMP.
+
+    MOV AL, CADENA[5]       ; Cargar cuarto bit (complementado o no).
+    MUL PESO[3]             ; Multiplicar AL * 1.
+    ADD DEC_COMP, AL        ; DEC_COMP contiene ahora el valor decimal del complemento a 1 (o del natural si no se invirtió).
+
+    MOV AH, 09h             ; Preparar función DOS AH=09h para mostrar la cadena de mensaje del complemento.
+    LEA DX, MSG3            ; Cargar offset de MSG3 en DX.
+    INT 21h                 ; Mostrar en pantalla "Complemento a 1 (decimal): ".
+
+    CMP SIGNO, 1            ; Comprobar si el número fue marcado como negativo para decidir si mostrar '-'.
+    JNE NO_SIGNO            ; Si no es negativo, saltar a NO_SIGNO (no imprimir signo).
+
+    MOV DL, '-'             ; Colocar '-' en DL (ASCII 45) para ser mostrado como signo negativo.
+    MOV AH, 02h             ; AH=02h prepara la función DOS para mostrar el carácter en DL.
+    INT 21h                 ; Mostrar el carácter '-' en pantalla.
+NO_SIGNO:                   ; Continuación si no mostrar signo o tras mostrarlo.
+
+    MOV AH, 0               ; Preparar AX para operación de división (limpiar AH).
+    MOV BL, 10              ; BL = 10 divisor decimal.
+    MOV AL, DEC_COMP        ; AL = valor decimal del complemento a 1 (0..15).
+    DIV BL                  ; AX / BL -> AL=cociente, AH=remainder; separar decena/unidad.
+    CMP AL, 0               ; ¿Hay decenas?
+    JE COMP_UNO             ; Si no hay decenas saltar a imprimir unidad.
+
+    PUSH AX                 ; Guardar AX en la pila para preservar estado antes de imprimir decenas.
+    MOV AH, 0               ; Limpiar AH para la siguiente división.
+    MOV BL, 10              ; BL = 10 divisor.
+    DIV BL                  ; Dividir de nuevo para aislar la decena en AL y la unidad en AH.
+    ADD AH, 48              ; Convertir la cifra de decena (AH) a ASCII sumando 48.
+    MOV DL, AH              ; DL = ASCII de la decena para imprimir.
+    MOV AH, 02h             ; AH=02h función DOS para imprimir carácter.
+    INT 21h                 ; Imprimir la decena en pantalla.
+    POP AX                  ; Recuperar AX desde la pila para seguir con la unidad.
+
+COMP_UNO:                   ; Etiqueta para imprimir cuando sólo queda la unidad (o tras recuperar AX).
+    ADD AH, 48              ; Convertir la unidad (AH) a ASCII sumando 48.
+    MOV DL, AH              ; Mover ASCII de la unidad a DL para imprimir.
+    MOV AH, 02h             ; Preparar AH=02h para INT 21h.
+    INT 21h                 ; Imprimir la unidad en pantalla.
+
+    MOV AH, 00h             ; AH=00h prepara la función BIOS INT 16h para leer tecla (espera/pause).
+    INT 16h                 ; Esperar hasta que el usuario pulse una tecla; esto actúa como pausa.
+
+    MOV AH, 4Ch             ; AH=4Ch prepara la función DOS INT 21h para terminar el programa con código de salida.
+    INT 21h                 ; Llamar a DOS para finalizar el programa y devolver control al SO.
+
+END                        ; Directiva que marca el final del fichero fuente para el ensamblador.

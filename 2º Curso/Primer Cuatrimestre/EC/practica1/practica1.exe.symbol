@@ -1,0 +1,20 @@
+< THE SYMBOL TABLE >  practica1.exe  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+STACK                    	00000     	-5        	SEGMENT   	(ITSELF)  
+DATA                     	00010     	-5        	SEGMENT   	(ITSELF)  
+CADENA                   	00000     	1         	VAR       	data      
+PESO                     	00007     	1         	VAR       	data      
+DEC_NAT                  	0000B     	1         	VAR       	data      
+DEC_COMP                 	0000C     	1         	VAR       	data      
+MSG1                     	0000D     	1         	VAR       	data      
+MSG2                     	00037     	1         	VAR       	data      
+MSG3                     	00055     	1         	VAR       	data      
+CODE                     	00018     	-5        	SEGMENT   	(ITSELF)  
+DEC_UNO                  	00079     	-1        	LABEL     	code      
+COMP_UNO                 	00108     	-1        	LABEL     	code      
+===================================================================================================
+[ 14/11/2025  --  11:43:55 ] 
+< END >
+ 

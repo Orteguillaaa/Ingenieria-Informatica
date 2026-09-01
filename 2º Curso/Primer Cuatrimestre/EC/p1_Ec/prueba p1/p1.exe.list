@@ -1,0 +1,238 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+p1.exe -- emu8086 assembler version: 4.08  
+ 
+[ 17/11/2025  --  9:43:50 ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       .MODEL SMALL
+[   2]        :                                       .STACK 100h
+[   3]        :                                       
+[   4]        :                                       .DATA
+[   5]    0100: 05 00 00 00 00 00 00                  CADENA DB 5,0,0,0,0,0,0
+[   6]    0107: 08 04 02 01                           PESO   DB 8,4,2,1
+[   7]    010B: 00                                    DEC_NAT DB ?
+[   8]    010C: 00                                    DEC_COMP DB ?
+[   9]    010D: 0D 0A 49 6E 74 72 6F 64 75 63 65 20   MSG1 DB 13,10,'Introduce un numero binario de 4 bits: $'
+                75 6E 20 6E 75 6D 65 72 6F 20 62 69 
+                6E 61 72 69 6F 20 64 65 20 34 20 62 
+                69 74 73 3A 20 24                   
+[  10]    0137: 0D 0A 56 61 6C 6F 72 20 65 6E 20 62   MSGNAT DB 13,10,'Valor en binario natural: $'
+                69 6E 61 72 69 6F 20 6E 61 74 75 72 
+                61 6C 3A 20 24                      
+[  11]    0154: 0D 0A 56 61 6C 6F 72 20 65 6E 20 63   MSGCOMP DB 13,10,'Valor en complemento a 1: $'
+                6F 6D 70 6C 65 6D 65 6E 74 6F 20 61 
+                20 31 3A 20 24                      
+[  12]        :                                       
+[  13]        :                                       .CODE
+[  14]    0180: B8 10 00                              MOV AX, @DATA
+[  15]    0183: 8E D8                                 MOV DS, AX
+[  16]        :                                       
+[  17]    0185: B4 09                                 MOV AH, 09h
+[  18]    0187: BA 0D 00                              LEA DX, MSG1
+[  19]    018A: CD 21                                 INT 21h
+[  20]        :                                       
+[  21]    018C: B4 0A                                 MOV AH, 0Ah
+[  22]    018E: BA 00 00                              LEA DX, CADENA
+[  23]    0191: CD 21                                 INT 21h
+[  24]        :                                       
+[  25]        :                                       ; convertir ASCII a 0/1
+[  26]    0193: 80 2E 02 00 30                        SUB CADENA[2], 48
+[  27]    0198: 80 2E 03 00 30                        SUB CADENA[3], 48
+[  28]    019D: 80 2E 04 00 30                        SUB CADENA[4], 48
+[  29]    01A2: 80 2E 05 00 30                        SUB CADENA[5], 48
+[  30]        :                                       
+[  31]        :                                       ; ===========================================
+[  32]        :                                       ; CALCULAR NATURAL SIEMPRE
+[  33]        :                                       ; ===========================================
+[  34]    01A7: A0 02 00                              MOV AL, CADENA[2]
+[  35]    01AA: F6 26 07 00                           MUL PESO[0]
+[  36]    01AE: A2 0B 00                              MOV DEC_NAT, AL
+[  37]        :                                       
+[  38]    01B1: A0 03 00                              MOV AL, CADENA[3]
+[  39]    01B4: F6 26 08 00                           MUL PESO[1]
+[  40]    01B8: 00 06 0B 00                           ADD DEC_NAT, AL
+[  41]        :                                       
+[  42]    01BC: A0 04 00                              MOV AL, CADENA[4]
+[  43]    01BF: F6 26 09 00                           MUL PESO[2]
+[  44]    01C3: 00 06 0B 00                           ADD DEC_NAT, AL
+[  45]        :                                       
+[  46]    01C7: A0 05 00                              MOV AL, CADENA[5]
+[  47]    01CA: F6 26 0A 00                           MUL PESO[3]
+[  48]    01CE: 00 06 0B 00                           ADD DEC_NAT, AL
+[  49]        :                                       
+[  50]        :                                       
+[  51]        :                                       ; ===========================================
+[  52]        :                                       ; CALCULAR COMPLEMENTO A 1:
+[  53]        :                                       ; SOLO se invierte si el primer bit = 1
+[  54]        :                                       ; ===========================================
+[  55]        :                                       
+[  56]    01D2: A0 02 00                              MOV AL, CADENA[2]
+[  57]    01D5: 3C 01                                 CMP AL, 1
+[  58]    01D7: 75 36                                 JNE NO_INVERTIR
+[  59]        :                                       
+[  60]        :                                       ; --- INVERTIR bits si empieza en 1 ----
+[  61]    01D9: 8A 1E 02 00                           MOV BL, CADENA[2]
+[  62]    01DD: F6 D3                                 NOT BL
+[  63]    01DF: 80 E3 01                              AND BL, 1
+[  64]    01E2: 88 1E 02 00                           MOV CADENA[2], BL
+[  65]        :                                       
+[  66]    01E6: 8A 1E 03 00                           MOV BL, CADENA[3]
+[  67]    01EA: F6 D3                                 NOT BL
+[  68]    01EC: 80 E3 01                              AND BL, 1
+[  69]    01EF: 88 1E 03 00                           MOV CADENA[3], BL
+[  70]        :                                       
+[  71]    01F3: 8A 1E 04 00                           MOV BL, CADENA[4]
+[  72]    01F7: F6 D3                                 NOT BL
+[  73]    01F9: 80 E3 01                              AND BL, 1
+[  74]    01FC: 88 1E 04 00                           MOV CADENA[4], BL
+[  75]        :                                       
+[  76]    0200: 8A 1E 05 00                           MOV BL, CADENA[5]
+[  77]    0204: F6 D3                                 NOT BL
+[  78]    0206: 80 E3 01                              AND BL, 1
+[  79]    0209: 88 1E 05 00                           MOV CADENA[5], BL
+[  80]        :                                       
+[  81]    020D: EB 1B                                 JMP CALC_COMP
+[  82]        :                                       
+[  83]    020F:                                       NO_INVERTIR:
+[  84]        :                                       ; Si empieza en 0 ? copiar bits naturales tal cual
+[  85]    020F: A0 02 00                              MOV AL, CADENA[2]
+[  86]    0212: 8A D8                                 MOV BL, AL
+[  87]    0214: 88 1E 02 00                           MOV CADENA[2], BL
+[  88]        :                                       
+[  89]    0218: A0 03 00                              MOV AL, CADENA[3]
+[  90]    021B: A2 03 00                              MOV CADENA[3], AL
+[  91]        :                                       
+[  92]    021E: A0 04 00                              MOV AL, CADENA[4]
+[  93]    0221: A2 04 00                              MOV CADENA[4], AL
+[  94]        :                                       
+[  95]    0224: A0 05 00                              MOV AL, CADENA[5]
+[  96]    0227: A2 05 00                              MOV CADENA[5], AL
+[  97]        :                                       
+[  98]        :                                       
+[  99]        :                                       ; ===========================================
+[ 100]        :                                       ; CALCULAR DEC_COMP
+[ 101]        :                                       ; ===========================================
+[ 102]    022A:                                       CALC_COMP:
+[ 103]    022A: A0 02 00                              MOV AL, CADENA[2]
+[ 104]    022D: F6 26 07 00                           MUL PESO[0]
+[ 105]    0231: A2 0C 00                              MOV DEC_COMP, AL
+[ 106]        :                                       
+[ 107]    0234: A0 03 00                              MOV AL, CADENA[3]
+[ 108]    0237: F6 26 08 00                           MUL PESO[1]
+[ 109]    023B: 00 06 0C 00                           ADD DEC_COMP, AL
+[ 110]        :                                       
+[ 111]    023F: A0 04 00                              MOV AL, CADENA[4]
+[ 112]    0242: F6 26 09 00                           MUL PESO[2]
+[ 113]    0246: 00 06 0C 00                           ADD DEC_COMP, AL
+[ 114]        :                                       
+[ 115]    024A: A0 05 00                              MOV AL, CADENA[5]
+[ 116]    024D: F6 26 0A 00                           MUL PESO[3]
+[ 117]    0251: 00 06 0C 00                           ADD DEC_COMP, AL
+[ 118]        :                                       
+[ 119]        :                                       
+[ 120]        :                                       ; ===========================================
+[ 121]        :                                       ; MOSTRAR VALOR NATURAL
+[ 122]        :                                       ; ===========================================
+[ 123]    0255: B4 09                                 MOV AH, 09h
+[ 124]    0257: BA 37 00                              LEA DX, MSGNAT
+[ 125]    025A: CD 21                                 INT 21h
+[ 126]        :                                       
+[ 127]    025C: A0 0B 00                              MOV AL, DEC_NAT
+[ 128]    025F: E8 15 00                              CALL PRINT_DEC
+[ 129]        :                                       
+[ 130]        :                                       
+[ 131]        :                                       ; ===========================================
+[ 132]        :                                       ; MOSTRAR COMPLEMENTO A 1
+[ 133]        :                                       ; ===========================================
+[ 134]    0262: B4 09                                 MOV AH, 09h
+[ 135]    0264: BA 54 00                              LEA DX, MSGCOMP
+[ 136]    0267: CD 21                                 INT 21h
+[ 137]        :                                       
+[ 138]    0269: A0 0C 00                              MOV AL, DEC_COMP
+[ 139]    026C: E8 08 00                              CALL PRINT_DEC
+[ 140]        :                                       
+[ 141]        :                                       
+[ 142]        :                                       ; ===========================================
+[ 143]        :                                       ; FIN
+[ 144]        :                                       ; ===========================================
+[ 145]    026F: B4 00                                 MOV AH, 00h
+[ 146]    0271: CD 16                                 INT 16h
+[ 147]    0273: B4 4C                                 MOV AH, 4Ch
+[ 148]    0275: CD 21                                 INT 21h
+[ 149]        :                                       
+[ 150]        :                                       ; ===========================================
+[ 151]        :                                       ; RUTINA PARA IMPRIMIR DECIMAL (0–15)
+[ 152]        :                                       ; ===========================================
+[ 153]    0277:                                       PRINT_DEC PROC
+[ 154]    0277: B4 00                                 MOV AH,0
+[ 155]    0279: B3 0A                                 MOV BL,10
+[ 156]    027B: F6 F3                                 DIV BL
+[ 157]        :                                       
+[ 158]    027D: 3C 00                                 CMP AL,0
+[ 159]    027F: 74 08                                 JE DIG_UNO
+[ 160]        :                                       
+[ 161]    0281: 04 30                                 ADD AL,48
+[ 162]    0283: 8A D0                                 MOV DL,AL
+[ 163]    0285: B4 02                                 MOV AH,02h
+[ 164]    0287: CD 21                                 INT 21h
+[ 165]        :                                       
+[ 166]    0289:                                       DIG_UNO:
+[ 167]    0289: 80 C4 30                              ADD AH,48
+[ 168]    028C: 8A D4                                 MOV DL,AH
+[ 169]    028E: B4 02                                 MOV AH,02h
+[ 170]    0290: CD 21                                 INT 21h
+[ 171]    0292: C3                                    RET
+[ 172]        :                                       PRINT_DEC ENDP
+[ 173]        :                                       
+[ 174]        :                                       END
+[ 175]        :                                       
+[ 176]        :                                       
+ 
+===================================================================================================
+ 
+EXE HEADER - bytes from 0000 to 01FF inclusive.
+
+0000: 4D      -   exe signature (M)
+0001: 5A      -   exe signature (Z)
+0002: 93      -   bytes on last page (l.byte)
+0003: 00      -   bytes on last page (h.byte)
+0004: 03      -   512 byte pages in file (l.byte)
+0005: 00      -   512 byte pages in file (h.byte)
+0006: 01      -   relocations (l.byte)
+0007: 00      -   relocations (h.byte)
+0008: 20      -   paragraphs in header (l.byte)
+0009: 00      -   paragraphs in header (h.byte)
+000A: 00      -   minimum memory (l.byte)
+000B: 00      -   minimum memory (h.byte)
+000C: FF      -   maximum memory (l.byte)
+000D: FF      -   maximum memory (h.byte)
+000E: 00      -   SS - stack segment (l.byte)
+000F: 00      -   SS - stack segment (h.byte)
+0010: 00      -   SP - stack pointer (l.byte)
+0011: 01      -   SP - stack pointer (h.byte)
+0012: 1A      -   check sum (l.byte)
+0013: 9F      -   check sum (h.byte)
+0014: 00      -   IP - instruction pointer (l.byte)
+0015: 00      -   IP - instruction pointer (h.byte)
+0016: 18      -   CS - code segment (l.byte)
+0017: 00      -   CS - code segment (h.byte)
+0018: 1E      -   relocation table adress (l.byte)
+0019: 00      -   relocation table adress (h.byte)
+001A: 00      -   overlay number (l.byte)
+001B: 00      -   overlay number (h.byte)
+001C: 01      -   signature (l.byte)
+001D: 00      -   signature (h.byte)
+001E: 01      -   relocation table - offset inside segment (l.byte)
+001F: 00      -   relocation table - offset inside segment (h.byte)
+0020: 18      -   relocation table - segment anchor (l.byte)
+0021: 00      -   relocation table - segment anchor (h.byte)
+0022 to 01FF  -   reserved relocation area  (00) 
+
+
+
+
+===================================================================================================

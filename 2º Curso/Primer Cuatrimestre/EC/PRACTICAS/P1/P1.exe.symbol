@@ -1,0 +1,35 @@
+< THE SYMBOL TABLE >  P1.exe  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+STACK                    	00000     	-5        	SEGMENT   	(ITSELF)  
+DATA                     	00010     	-5        	SEGMENT   	(ITSELF)  
+CADENA                   	00000     	1         	VAR       	data      
+PESO                     	00007     	1         	VAR       	data      
+DEC_NAT                  	0000B     	1         	VAR       	data      
+DEC_COMP                 	0000C     	1         	VAR       	data      
+SIGNO                    	0000D     	1         	VAR       	data      
+MSG1                     	0000E     	1         	VAR       	data      
+MSG2                     	00038     	1         	VAR       	data      
+MSG3                     	00056     	1         	VAR       	data      
+ALATTR                   	00074     	1         	VAR       	data      
+TEMPCHAR                 	00075     	1         	VAR       	data      
+CODE                     	00018     	-5        	SEGMENT   	(ITSELF)  
+MAIN                     	00000     	-1        	NEAR      	code      
+ES_NEGATIVO              	0004A     	-1        	LABEL     	code      
+SEGUIR                   	0004F     	-1        	LABEL     	code      
+NAT_UNO_ONLY             	000A5     	-1        	LABEL     	code      
+NO_COMP_2                	000C5     	-1        	LABEL     	code      
+NO_COMP_3                	000D9     	-1        	LABEL     	code      
+NO_COMP_4                	000ED     	-1        	LABEL     	code      
+NO_COMP_5                	00101     	-1        	LABEL     	code      
+NO_SIGNO                 	00149     	-1        	LABEL     	code      
+COMP_UNO_ONLY            	00167     	-1        	LABEL     	code      
+PRINTDOLLARSTRINGTOVIDEO 	0017B     	-1        	NEAR      	code      
+.LOOP_WRITE              	0017E     	-1        	LABEL     	code      
+.DONE_WRITE              	0018D     	-1        	LABEL     	code      
+PRINTCHARTOVIDEO         	00191     	-1        	NEAR      	code      
+===================================================================================================
+[ 03/12/2025  --  0:38:59 ] 
+< END >
+ 

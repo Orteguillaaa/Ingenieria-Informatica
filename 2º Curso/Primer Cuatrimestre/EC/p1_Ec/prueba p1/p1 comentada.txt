@@ -1,0 +1,139 @@
+.MODEL SMALL                ; Define el modelo de memoria SMALL (1 segmento de código y 1 de datos).
+.STACK 100h                 ; Reserva 0x100 bytes para la pila (inicialización del tamaño del stack).
+
+.DATA                       ; Comienzo del segmento de datos: a partir de aquí se declaran variables.
+CADENA DB 5,0,0,0,0,0,0     ; Reserva y define la estructura para la lectura de cadena (Nmáx+1 y espacio para caracteres + CR).
+PESO   DB 8,4,2,1           ; Define un array de bytes con los pesos de cada bit (2^3,2^2,2^1,2^0).
+DEC_NAT DB ?                ; Reserva 1 byte para almacenar el resultado decimal en binario natural.
+DEC_COMP DB ?               ; Reserva 1 byte para almacenar el resultado decimal del complemento a 1.
+MSG1 DB 13,10,'Introduce un número binario de 4 bits: $'  ; Cadena para pedir input (termina con $ para INT 21h AH=09h).
+MSG2 DB 13,10,'Binario natural (decimal): $'              ; Cadena para mostrar el resultado natural.
+MSG3 DB 13,10,'Complemento a 1 (decimal): $'              ; Cadena para mostrar el resultado complemento a 1.
+
+.CODE                       ; Comienzo del segmento de código: a partir de aquí va el código ejecutable.
+    MOV AX, @DATA           ; Carga en AX la dirección de segmento de datos (@DATA) que asigna el ensamblador.
+    MOV DS, AX              ; Inicializa DS con el segmento de datos para poder acceder a variables en .DATA.
+
+    MOV AH, 09h             ; Coloca 09h en AH para usar la función INT 21h mostrar cadena hasta '$'.
+    LEA DX, MSG1            ; Carga en DX el offset (dirección efectiva) de la cadena MSG1.
+    INT 21h                 ; Interrupción DOS: AH=09h muestra en pantalla la cadena apuntada por DS:DX.
+
+    MOV AH, 0Ah             ; Coloca 0Ah en AH para usar la función INT 21h que lee una línea de teclado en buffer.
+    LEA DX, CADENA          ; Carga en DX el offset del buffer CADENA (estructura requerida por AH=0Ah).
+    INT 21h                 ; Interrupción DOS: lee una cadena de teclado y la guarda en el buffer CADENA.
+
+    SUB CADENA[2], 48       ; Resta 48 ('0') al carácter en CADENA[2], convirtiendo ASCII '0'/'1' a valor numérico 0/1.
+    SUB CADENA[3], 48       ; Resta 48 a CADENA[3] (convierte ASCII a valor numérico).
+    SUB CADENA[4], 48       ; Resta 48 a CADENA[4] (convierte ASCII a valor numérico).
+    SUB CADENA[5], 48       ; Resta 48 a CADENA[5] (convierte ASCII a valor numérico).
+
+    MOV AL, 0               ; Pone 0 en AL (limpia AL antes de usar MUL/operaciones).
+    MOV AL, CADENA[2]       ; Carga en AL el bit más significativo (primer dígito útil) de la cadena (valor 0 o 1).
+    MUL PESO[0]             ; Multiplica AL por PESO[0] (8): resultado en AX; para 8-bit usa AL * memoria -> AX.
+    MOV DEC_NAT, AL         ; Guarda el byte menos significativo del producto en DEC_NAT (acumula parcial).
+
+    MOV AL, CADENA[3]       ; Carga en AL el siguiente bit de la cadena.
+    MUL PESO[1]             ; Multiplica AL por PESO[1] (4), resultado en AX.
+    ADD DEC_NAT, AL         ; Suma el resultado parcial (AL) a DEC_NAT.
+
+    MOV AL, CADENA[4]       ; Carga en AL el siguiente bit.
+    MUL PESO[2]             ; Multiplica AL por PESO[2] (2), resultado en AX.
+    ADD DEC_NAT, AL         ; Suma el resultado parcial a DEC_NAT.
+
+    MOV AL, CADENA[5]       ; Carga en AL el bit menos significativo.
+    MUL PESO[3]             ; Multiplica AL por PESO[3] (1), resultado en AX.
+    ADD DEC_NAT, AL         ; Suma el resultado final a DEC_NAT; DEC_NAT contiene ahora el valor decimal natural.
+
+    MOV AH, 09h             ; Coloca AH=09h para mostrar la etiqueta del resultado natural.
+    LEA DX, MSG2            ; Carga en DX el offset de la cadena MSG2.
+    INT 21h                 ; INT 21h AH=09h muestra la cadena MSG2.
+
+    MOV AH, 0               ; Pone AH = 0 (prepara registros antes de DIV).
+    MOV BL, 10              ; Carga en BL el divisor 10 (para obtener decenas y unidades).
+    MOV AL, DEC_NAT         ; Carga en AL el valor decimal calculado en DEC_NAT (0..15).
+    DIV BL                  ; Divide AX entre BL (AL/BYTE divisor): cociente en AL, resto en AH.
+    CMP AL, 0               ; Compara el cociente (AL) con 0 para ver si hay cifra de decenas.
+    JE DEC_UNO              ; Si cociente = 0 salta a etiqueta DEC_UNO (solo unidad).
+    PUSH AX                 ; Guarda AX en la pila para preservar resto/cociente tras mostrar la decena.
+    MOV AH, 0               ; Asegura AH=0 antes de nueva DIV (preparación).
+    MOV BL, 10              ; Vuelve a poner el divisor 10 en BL (necesario para la siguiente DIV).
+    DIV BL                  ; Divide AX entre 10: ahora en AL queda la cifra más significativa (decena), AH resto.
+    ADD AH, 48              ; Convierte el dígito (en AH) a ASCII sumando 48.
+    MOV DL, AH              ; Pone en DL el ASCII de la decena para salida por INT 21h AH=02h.
+    MOV AH, 02h             ; Prepara AH=02h (función DOS: mostrar carácter en DL).
+    INT 21h                 ; Muestra en pantalla el carácter ASCII contenido en DL.
+    POP AX                  ; Recupera AX previamente guardado (vuelve al estado antes del PUSH).
+DEC_UNO:
+    ADD AH, 48              ; Convierte la cifra de unidades (en AH) a ASCII sumando 48.
+    MOV DL, AH              ; Mueve el ASCII de la unidad a DL.
+    MOV AH, 02h             ; AH=02h para mostrar carácter en DL.
+    INT 21h                 ; Muestra en pantalla el carácter ASCII de la unidad.
+
+    MOV BL, CADENA[2]       ; Carga en BL el primer bit (0/1) de la cadena para invertirlo (complemento a 1).
+    NOT BL                  ; Invierte todos los bits de BL (complemento bit a bit).
+    AND BL, 1               ; Enmascara BL con 1 para dejar solo el bit menos significativo (0 o 1).
+    MOV CADENA[2], BL       ; Almacena de nuevo el bit complementado de vuelta en CADENA[2].
+
+    MOV BL, CADENA[3]       ; Carga en BL el segundo bit de la cadena.
+    NOT BL                  ; Invierte todos los bits de BL.
+    AND BL, 1               ; Conserva solo el bit de interés (LSB) en BL.
+    MOV CADENA[3], BL       ; Escribe el bit complementado en CADENA[3].
+
+    MOV BL, CADENA[4]       ; Carga en BL el tercer bit de la cadena.
+    NOT BL                  ; Invierte todos los bits de BL.
+    AND BL, 1               ; Conserva solo el bit menos significativo.
+    MOV CADENA[4], BL       ; Guarda el bit complementado en CADENA[4].
+
+    MOV BL, CADENA[5]       ; Carga en BL el cuarto bit de la cadena.
+    NOT BL                  ; Invierte todos los bits de BL.
+    AND BL, 1               ; Enmascara para dejar solo 0/1 en BL.
+    MOV CADENA[5], BL       ; Escribe el bit complementado en CADENA[5].
+
+    MOV AL, 0               ; Limpia AL antes de empezar la nueva conversión.
+    MOV AL, CADENA[2]       ; Carga en AL el primer bit complementado.
+    MUL PESO[0]             ; Multiplica AL por PESO[0] (8), resultado en AX.
+    MOV DEC_COMP, AL        ; Guarda la primera contribución en DEC_COMP.
+
+    MOV AL, CADENA[3]       ; Carga en AL el segundo bit complementado.
+    MUL PESO[1]             ; Multiplica AL por PESO[1] (4), resultado en AX.
+    ADD DEC_COMP, AL        ; Suma la contribución a DEC_COMP.
+
+    MOV AL, CADENA[4]       ; Carga en AL el tercer bit complementado.
+    MUL PESO[2]             ; Multiplica AL por PESO[2] (2).
+    ADD DEC_COMP, AL        ; Suma la contribución a DEC_COMP.
+
+    MOV AL, CADENA[5]       ; Carga en AL el cuarto bit complementado.
+    MUL PESO[3]             ; Multiplica AL por PESO[3] (1).
+    ADD DEC_COMP, AL        ; Suma la última contribución; DEC_COMP contiene ahora decimal del complemento a 1.
+
+    MOV AH, 09h             ; AH=09h para mostrar la etiqueta del resultado de complemento a 1.
+    LEA DX, MSG3            ; Carga en DX la dirección de la cadena MSG3.
+    INT 21h                 ; Muestra MSG3 por pantalla (INT 21h AH=09h).
+
+    MOV AH, 0               ; Limpia AH antes de operación de división.
+    MOV BL, 10              ; Carga 10 en BL para obtener decenas y unidades de DEC_COMP.
+    MOV AL, DEC_COMP        ; Carga el valor DEC_COMP en AL.
+    DIV BL                  ; Divide AX entre BL, obteniendo cociente en AL y resto en AH.
+    CMP AL, 0               ; Compara el cociente con 0 para decidir si hay decena.
+    JE COMP_UNO             ; Si cociente = 0 salta a COMP_UNO (solo unidad).
+    PUSH AX                 ; Guarda AX en pila para preservar valores.
+    MOV AH, 0               ; Limpia AH antes de la siguiente DIV.
+    MOV BL, 10              ; Vuelve a poner divisor 10 en BL.
+    DIV BL                  ; Divide AX entre 10; resultado en AL y resto en AH.
+    ADD AH, 48              ; Convierte el dígito de decena (AH) a ASCII sumando 48.
+    MOV DL, AH              ; Mueve ASCII de decena a DL para mostrarlo.
+    MOV AH, 02h             ; AH=02h preparar mostrar carácter en DL.
+    INT 21h                 ; Muestra el carácter (decena).
+    POP AX                  ; Recupera AX de la pila.
+COMP_UNO:
+    ADD AH, 48              ; Convierte la cifra de unidad a ASCII añadiendo 48.
+    MOV DL, AH              ; Pone el ASCII de la unidad en DL.
+    MOV AH, 02h             ; AH=02h función mostrar carácter.
+    INT 21h                 ; Muestra el ASCII de la unidad por pantalla.
+
+    MOV AH, 00h             ; AH=00h prepara la función INT 16h (leer tecla).
+    INT 16h                 ; INT 16h: espera y captura una tecla (carácter) en AL, para pausa hasta tecla.
+    MOV AH, 4Ch             ; AH=4Ch prepara INT 21h para terminar el programa con código de retorno.
+    INT 21h                 ; INT 21h AH=4Ch termina el programa y devuelve el control al DOS.
+
+END                         ; Marca el final del fichero fuente para el ensamblador.

@@ -1,0 +1,28 @@
+< THE SYMBOL TABLE >  P1.exe  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+STACK                    	00000     	-5        	SEGMENT   	(ITSELF)  
+DATA                     	00010     	-5        	SEGMENT   	(ITSELF)  
+CADENA                   	00000     	1         	VAR       	data      
+PESO                     	00007     	1         	VAR       	data      
+DEC_NAT                  	0000B     	1         	VAR       	data      
+DEC_COMP                 	0000C     	1         	VAR       	data      
+SIGNO                    	0000D     	1         	VAR       	data      
+MSG1                     	0000E     	1         	VAR       	data      
+MSG2                     	00038     	1         	VAR       	data      
+MSG3                     	00056     	1         	VAR       	data      
+CODE                     	00018     	-5        	SEGMENT   	(ITSELF)  
+ES_NEGATIVO              	00035     	-1        	LABEL     	code      
+SEGUIR                   	0003A     	-1        	LABEL     	code      
+NAT_UNO                  	0008A     	-1        	LABEL     	code      
+NO_COMPLEMENTO_2         	000A7     	-1        	LABEL     	code      
+NO_COMPLEMENTO_3         	000BB     	-1        	LABEL     	code      
+NO_COMPLEMENTO_4         	000CF     	-1        	LABEL     	code      
+NO_COMPLEMENTO_5         	000E3     	-1        	LABEL     	code      
+NO_SIGNO                 	00122     	-1        	LABEL     	code      
+COMP_UNO                 	00140     	-1        	LABEL     	code      
+===================================================================================================
+[ 24/11/2025  --  11:34:20 ] 
+< END >
+ 

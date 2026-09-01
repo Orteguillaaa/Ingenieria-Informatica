@@ -1,0 +1,250 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+P1.exe -- emu8086 assembler version: 4.08  
+ 
+[ 24/11/2025  --  11:34:20 ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       .MODEL SMALL
+[   2]        :                                       .STACK 100h
+[   3]        :                                       
+[   4]        :                                       .DATA
+[   5]    0100: 05 00 00 00 00 00 00                  CADENA DB 5,0,0,0,0,0,0
+[   6]    0107: 08 04 02 01                           PESO   DB 8,4,2,1
+[   7]    010B: 00                                    DEC_NAT DB ?
+[   8]    010C: 00                                    DEC_COMP DB ?
+[   9]    010D: 00                                    SIGNO DB ?
+[  10]        :                                       
+[  11]    010E: 0D 0A 49 6E 74 72 6F 64 75 63 65 20   MSG1 DB 13,10,'Introduce un número binario de 4 bits: $'
+                75 6E 20 6E FA 6D 65 72 6F 20 62 69 
+                6E 61 72 69 6F 20 64 65 20 34 20 62 
+                69 74 73 3A 20 24                   
+[  12]    0138: 0D 0A 42 69 6E 61 72 69 6F 20 6E 61   MSG2 DB 13,10,'Binario natural (decimal): $'
+                74 75 72 61 6C 20 28 64 65 63 69 6D 
+                61 6C 29 3A 20 24                   
+[  13]    0156: 0D 0A 43 6F 6D 70 6C 65 6D 65 6E 74   MSG3 DB 13,10,'Complemento a 1 (decimal): $'
+                6F 20 61 20 31 20 28 64 65 63 69 6D 
+                61 6C 29 3A 20 24                   
+[  14]        :                                       
+[  15]        :                                       .CODE
+[  16]    0180: B8 10 00                              MOV AX, @DATA
+[  17]    0183: 8E D8                                 MOV DS, AX
+[  18]        :                                       
+[  19]        :                                       
+[  20]    0185: B4 09                                 MOV AH, 09h
+[  21]    0187: BA 0E 00                              LEA DX, MSG1
+[  22]    018A: CD 21                                 INT 21h
+[  23]        :                                       
+[  24]        :                                       
+[  25]    018C: B4 0A                                 MOV AH, 0Ah
+[  26]    018E: BA 00 00                              LEA DX, CADENA
+[  27]    0191: CD 21                                 INT 21h
+[  28]        :                                       
+[  29]        :                                       
+[  30]    0193: 80 2E 02 00 30                        SUB CADENA[2], 48
+[  31]    0198: 80 2E 03 00 30                        SUB CADENA[3], 48
+[  32]    019D: 80 2E 04 00 30                        SUB CADENA[4], 48
+[  33]    01A2: 80 2E 05 00 30                        SUB CADENA[5], 48
+[  34]        :                                       
+[  35]        :                                       
+[  36]    01A7: A0 02 00                              MOV AL, CADENA[2]
+[  37]    01AA: 3C 01                                 CMP AL, 1
+[  38]    01AC: 74 07                                 JE ES_NEGATIVO
+[  39]        :                                       
+[  40]    01AE: C6 06 0D 00 00                        MOV SIGNO, 0
+[  41]    01B3: EB 05                                 JMP SEGUIR
+[  42]        :                                       
+[  43]    01B5:                                       ES_NEGATIVO:
+[  44]    01B5: C6 06 0D 00 01                        MOV SIGNO, 1
+[  45]        :                                       
+[  46]    01BA:                                       SEGUIR:
+[  47]        :                                       
+[  48]        :                                       
+[  49]    01BA: A0 02 00                              MOV AL, CADENA[2]
+[  50]    01BD: F6 26 07 00                           MUL PESO[0]
+[  51]    01C1: A2 0B 00                              MOV DEC_NAT, AL
+[  52]        :                                       
+[  53]    01C4: A0 03 00                              MOV AL, CADENA[3]
+[  54]    01C7: F6 26 08 00                           MUL PESO[1]
+[  55]    01CB: 00 06 0B 00                           ADD DEC_NAT, AL
+[  56]        :                                       
+[  57]    01CF: A0 04 00                              MOV AL, CADENA[4]
+[  58]    01D2: F6 26 09 00                           MUL PESO[2]
+[  59]    01D6: 00 06 0B 00                           ADD DEC_NAT, AL
+[  60]        :                                       
+[  61]    01DA: A0 05 00                              MOV AL, CADENA[5]
+[  62]    01DD: F6 26 0A 00                           MUL PESO[3]
+[  63]    01E1: 00 06 0B 00                           ADD DEC_NAT, AL
+[  64]        :                                       
+[  65]        :                                       
+[  66]    01E5: B4 09                                 MOV AH, 09h
+[  67]    01E7: BA 38 00                              LEA DX, MSG2
+[  68]    01EA: CD 21                                 INT 21h
+[  69]        :                                       
+[  70]        :                                       
+[  71]    01EC: B4 00                                 MOV AH, 0
+[  72]    01EE: B3 0A                                 MOV BL, 10
+[  73]    01F0: A0 0B 00                              MOV AL, DEC_NAT
+[  74]    01F3: F6 F3                                 DIV BL
+[  75]    01F5: 3C 00                                 CMP AL, 0
+[  76]    01F7: 74 11                                 JE NAT_UNO
+[  77]    01F9: 50                                    PUSH AX
+[  78]    01FA: B4 00                                 MOV AH, 0
+[  79]    01FC: B3 0A                                 MOV BL, 10
+[  80]    01FE: F6 F3                                 DIV BL
+[  81]    0200: 80 C4 30                              ADD AH, 48
+[  82]    0203: 8A D4                                 MOV DL, AH
+[  83]    0205: B4 02                                 MOV AH, 02h
+[  84]    0207: CD 21                                 INT 21h
+[  85]    0209: 58                                    POP AX
+[  86]    020A:                                       NAT_UNO:
+[  87]    020A: 80 C4 30                              ADD AH, 48
+[  88]    020D: 8A D4                                 MOV DL, AH
+[  89]    020F: B4 02                                 MOV AH, 02h
+[  90]    0211: CD 21                                 INT 21h
+[  91]        :                                       
+[  92]        :                                       
+[  93]    0213: 80 3E 0D 00 01                        CMP SIGNO, 1
+[  94]    0218: 75 0D                                 JNE NO_COMPLEMENTO_2
+[  95]    021A: 8A 1E 02 00                           MOV BL, CADENA[2]
+[  96]    021E: F6 D3                                 NOT BL
+[  97]    0220: 80 E3 01                              AND BL, 1
+[  98]    0223: 88 1E 02 00                           MOV CADENA[2], BL
+[  99]    0227:                                       NO_COMPLEMENTO_2:
+[ 100]        :                                       
+[ 101]    0227: 80 3E 0D 00 01                        CMP SIGNO, 1
+[ 102]    022C: 75 0D                                 JNE NO_COMPLEMENTO_3
+[ 103]    022E: 8A 1E 03 00                           MOV BL, CADENA[3]
+[ 104]    0232: F6 D3                                 NOT BL
+[ 105]    0234: 80 E3 01                              AND BL, 1
+[ 106]    0237: 88 1E 03 00                           MOV CADENA[3], BL
+[ 107]    023B:                                       NO_COMPLEMENTO_3:
+[ 108]        :                                       
+[ 109]    023B: 80 3E 0D 00 01                        CMP SIGNO, 1
+[ 110]    0240: 75 0D                                 JNE NO_COMPLEMENTO_4
+[ 111]    0242: 8A 1E 04 00                           MOV BL, CADENA[4]
+[ 112]    0246: F6 D3                                 NOT BL
+[ 113]    0248: 80 E3 01                              AND BL, 1
+[ 114]    024B: 88 1E 04 00                           MOV CADENA[4], BL
+[ 115]    024F:                                       NO_COMPLEMENTO_4:
+[ 116]        :                                       
+[ 117]    024F: 80 3E 0D 00 01                        CMP SIGNO, 1
+[ 118]    0254: 75 0D                                 JNE NO_COMPLEMENTO_5
+[ 119]    0256: 8A 1E 05 00                           MOV BL, CADENA[5]
+[ 120]    025A: F6 D3                                 NOT BL
+[ 121]    025C: 80 E3 01                              AND BL, 1
+[ 122]    025F: 88 1E 05 00                           MOV CADENA[5], BL
+[ 123]    0263:                                       NO_COMPLEMENTO_5:
+[ 124]        :                                       
+[ 125]        :                                       
+[ 126]    0263: A0 02 00                              MOV AL, CADENA[2]
+[ 127]    0266: F6 26 07 00                           MUL PESO[0]
+[ 128]    026A: A2 0C 00                              MOV DEC_COMP, AL
+[ 129]        :                                       
+[ 130]    026D: A0 03 00                              MOV AL, CADENA[3]
+[ 131]    0270: F6 26 08 00                           MUL PESO[1]
+[ 132]    0274: 00 06 0C 00                           ADD DEC_COMP, AL
+[ 133]        :                                       
+[ 134]    0278: A0 04 00                              MOV AL, CADENA[4]
+[ 135]    027B: F6 26 09 00                           MUL PESO[2]
+[ 136]    027F: 00 06 0C 00                           ADD DEC_COMP, AL
+[ 137]        :                                       
+[ 138]    0283: A0 05 00                              MOV AL, CADENA[5]
+[ 139]    0286: F6 26 0A 00                           MUL PESO[3]
+[ 140]    028A: 00 06 0C 00                           ADD DEC_COMP, AL
+[ 141]        :                                       
+[ 142]        :                                       
+[ 143]    028E: B4 09                                 MOV AH, 09h
+[ 144]    0290: BA 56 00                              LEA DX, MSG3
+[ 145]    0293: CD 21                                 INT 21h
+[ 146]        :                                       
+[ 147]        :                                       
+[ 148]    0295: 80 3E 0D 00 01                        CMP SIGNO, 1
+[ 149]    029A: 75 06                                 JNE NO_SIGNO
+[ 150]        :                                       
+[ 151]    029C: B2 2D                                 MOV DL, '-'
+[ 152]    029E: B4 02                                 MOV AH, 02h
+[ 153]    02A0: CD 21                                 INT 21h
+[ 154]        :                                       
+[ 155]    02A2:                                       NO_SIGNO:
+[ 156]        :                                       
+[ 157]        :                                       
+[ 158]    02A2: B4 00                                 MOV AH, 0
+[ 159]    02A4: B3 0A                                 MOV BL, 10
+[ 160]    02A6: A0 0C 00                              MOV AL, DEC_COMP
+[ 161]    02A9: F6 F3                                 DIV BL
+[ 162]    02AB: 3C 00                                 CMP AL, 0
+[ 163]    02AD: 74 11                                 JE COMP_UNO
+[ 164]    02AF: 50                                    PUSH AX
+[ 165]    02B0: B4 00                                 MOV AH, 0
+[ 166]    02B2: B3 0A                                 MOV BL, 10
+[ 167]    02B4: F6 F3                                 DIV BL
+[ 168]    02B6: 80 C4 30                              ADD AH, 48
+[ 169]    02B9: 8A D4                                 MOV DL, AH
+[ 170]    02BB: B4 02                                 MOV AH, 02h
+[ 171]    02BD: CD 21                                 INT 21h
+[ 172]    02BF: 58                                    POP AX
+[ 173]    02C0:                                       COMP_UNO:
+[ 174]    02C0: 80 C4 30                              ADD AH, 48
+[ 175]    02C3: 8A D4                                 MOV DL, AH
+[ 176]    02C5: B4 02                                 MOV AH, 02h
+[ 177]    02C7: CD 21                                 INT 21h
+[ 178]        :                                       
+[ 179]        :                                       
+[ 180]    02C9: B4 00                                 MOV AH, 00h
+[ 181]    02CB: CD 16                                 INT 16h
+[ 182]        :                                       
+[ 183]        :                                       
+[ 184]    02CD: B4 4C                                 MOV AH, 4Ch
+[ 185]    02CF: CD 21                                 INT 21h
+[ 186]        :                                       
+[ 187]        :                                       END
+[ 188]        :                                       
+ 
+===================================================================================================
+ 
+EXE HEADER - bytes from 0000 to 01FF inclusive.
+
+0000: 4D      -   exe signature (M)
+0001: 5A      -   exe signature (Z)
+0002: D1      -   bytes on last page (l.byte)
+0003: 00      -   bytes on last page (h.byte)
+0004: 03      -   512 byte pages in file (l.byte)
+0005: 00      -   512 byte pages in file (h.byte)
+0006: 01      -   relocations (l.byte)
+0007: 00      -   relocations (h.byte)
+0008: 20      -   paragraphs in header (l.byte)
+0009: 00      -   paragraphs in header (h.byte)
+000A: 00      -   minimum memory (l.byte)
+000B: 00      -   minimum memory (h.byte)
+000C: FF      -   maximum memory (l.byte)
+000D: FF      -   maximum memory (h.byte)
+000E: 00      -   SS - stack segment (l.byte)
+000F: 00      -   SS - stack segment (h.byte)
+0010: 00      -   SP - stack pointer (l.byte)
+0011: 01      -   SP - stack pointer (h.byte)
+0012: D9      -   check sum (l.byte)
+0013: 6B      -   check sum (h.byte)
+0014: 00      -   IP - instruction pointer (l.byte)
+0015: 00      -   IP - instruction pointer (h.byte)
+0016: 18      -   CS - code segment (l.byte)
+0017: 00      -   CS - code segment (h.byte)
+0018: 1E      -   relocation table adress (l.byte)
+0019: 00      -   relocation table adress (h.byte)
+001A: 00      -   overlay number (l.byte)
+001B: 00      -   overlay number (h.byte)
+001C: 01      -   signature (l.byte)
+001D: 00      -   signature (h.byte)
+001E: 01      -   relocation table - offset inside segment (l.byte)
+001F: 00      -   relocation table - offset inside segment (h.byte)
+0020: 18      -   relocation table - segment anchor (l.byte)
+0021: 00      -   relocation table - segment anchor (h.byte)
+0022 to 01FF  -   reserved relocation area  (00) 
+
+
+
+
+===================================================================================================
